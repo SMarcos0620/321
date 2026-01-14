@@ -7,35 +7,6 @@ Original file is located at
     https://colab.research.google.com/drive/1_eyZQTY6t9bKq-5ChL6vDNUA3CA1Hfj-
 """
 
-#Cell downloads the images
-
-
-import requests
-import os
-
-
-# Create directory if needed
-content_dir = os.path.join(os.getcwd(), "content")
-os.makedirs(content_dir, exist_ok=True)
-
-
-cp_logo_url = "https://cpslo.sharepoint.com/sites/Winter2026csc-321-09/Shared%20Documents/cp-logo.bmp?"
-
-response = requests.get(cp_logo_url)
-open(content_dir + "/cp-logo.bmp", "wb+").write(response.content)
-
-mustang_logo_url = "https://cpslo.sharepoint.com/sites/Winter2026csc-321-09/Shared%20Documents/mustang.bmp?"
-
-response = requests.get(mustang_logo_url)
-open(content_dir + "/mustang.bmp", "wb+").write(response.content)
-
-
-from Crypto.Cipher import AES
-from Crypto.Hash import HMAC, SHA256
-from Crypto.Random import get_random_bytes
-from PIL import Image
-import struct
-import imghdr
 
 '''
 ----- TASK 1 -----
@@ -65,24 +36,37 @@ Additional Notes:
 
 '''
 
+import os
+from pathlib import Path
+import time
+
+from Crypto.Cipher import AES
+from Crypto.Hash import HMAC, SHA256
+from Crypto.Random import get_random_bytes
+from PIL import Image
+import matplotlib.pyplot as plt
+
+content_dir = os.path.join(os.getcwd(), "content")
+cp_logo_path = Path(content_dir + "/cp-logo.bmp")
+mustang_logo_path = Path(content_dir + "/mustang.bmp")
 
 '''attempt to open .bmp file from /content'''
 def getFileHeader(file_input):
   print("Requested file: " + file_input)
   try:
     #helpful link 1: https://stackoverflow.com/questions/47003833/how-to-read-bmp-file-header-in-python
-    file_data = Image.open("/content/" + file_input)
-    display(file_data)
+    file_data = Image.open(content_dir + "/" + file_input)
+    plt.imshow(file_data)
+    plt.axis("off")
+    plt.show()
     return file_data
-    #print(imghdr.what(file_input))
-    return 0
   except FileNotFoundError:
     print("File not found")
     return -1
 
 def main():
   '''1) take a (plaintext) file'''
-  file_input = input("Enter file name (either 'mustang.bmp' or 'cp-logo.bmp'):\n ")
+  file_input = input("Enter file name (either 'mustang.bmp' or 'cp-logo.bmp'): ")
   file_header = getFileHeader(file_input)
 
   '''2) generate a random key (and random IV, in the case of CBC)'''

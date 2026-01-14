@@ -2,20 +2,28 @@
 
 Ensure that you have (uv)[https://docs.astral.sh/uv/] installed on your machine.
 
-run 
+run
+
 ```sh
 uv sync
 ```
-in an assignment subdirectory to install the python environment. 
+
+in an assignment subdirectory to install the python environment.
 
 run a python script with
+
 ```sh
 uv run <script name>
 ```
-
 
 use (PYPI)[https://pypi.org] to search for libraries, install with:
 
 ```sh
 uv add <pypi package name>
+```
+
+install matplotlib in order to see the images:
+
+```sh
+uv pip install matplotlib pillow
 ```

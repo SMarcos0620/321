@@ -51,7 +51,7 @@ cp_logo_path = Path(content_dir + "/cp-logo.bmp")
 mustang_logo_path = Path(content_dir + "/mustang.bmp")
 
 '''attempt to open .bmp file from /content'''
-def getFileHeader(file_input):
+def getFile(file_input):
   print("Requested file: " + file_input)
   try:
     #helpful link 1: https://stackoverflow.com/questions/47003833/how-to-read-bmp-file-header-in-python
@@ -67,7 +67,8 @@ def getFileHeader(file_input):
 def main():
   '''1) take a (plaintext) file'''
   file_input = input("Enter file name (either 'mustang.bmp' or 'cp-logo.bmp'): ")
-  file_header = getFileHeader(file_input)
+  file_data = getFile(file_input)
+
 
   '''2) generate a random key (and random IV, in the case of CBC)'''
   #helpful link 1: https://www.pycryptodome.org/src/examples#encrypt-data-with-aes

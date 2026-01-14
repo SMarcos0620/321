@@ -1,7 +1,7 @@
 [project]
 name = "asgn-2"
 version = "0.1.0"
-description = "Add your description here"
+description = "csc 321 asgn number 2"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [

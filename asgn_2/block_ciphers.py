@@ -68,7 +68,8 @@ def get_file(filename):
         return -1
 
 
-def show_img(image: ndarray):
+def show_img(image: ndarray, file_name):
+    plt.title(file_name)
     plt.imshow(image)
     plt.axis("off")
     plt.show()
@@ -154,14 +155,17 @@ def main():
     body_data = get_body(file_data)
     # print(body_data)
 
-    """2) generate a random key (and random IV, in the case of CBC)"""
-    key = get_random_bytes(16)
 
-    # encrypted_img_ecb = encrypt_img_ecb(key, body_data)
+    for i in range(10):
+        """2) generate a random key (and random IV, in the case of CBC)"""
+        key = get_random_bytes(16)
 
-    # show_img(encrypted_img_ecb)
-    img = encrypt_img_cbc(key, body_data, get_random_bytes(16))
-    show_img(img)
+        # encrypted_img_ecb = encrypt_img_ecb(key, body_data)
+
+        # show_img(encrypted_img_ecb)
+        img = encrypt_img_cbc(key, body_data, get_random_bytes(16))
+        body_data = img
+    show_img(img, filename)
 
     # helpful link 1: https://www.pycryptodome.org/src/examples#encrypt-data-with-aes
     # helpful link 2: https://pycryptodome.readthedocs.io/en/latest/src/cipher/classic.html#ecb-mode

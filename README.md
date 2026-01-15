@@ -21,9 +21,3 @@ use (PYPI)[https://pypi.org] to search for libraries, install with:
 ```sh
 uv add <pypi package name>
 ```
-
-install matplotlib in order to see the images:
-
-```sh
-uv pip install matplotlib pillow
-```

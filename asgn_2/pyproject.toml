@@ -5,6 +5,7 @@ description = "csc 321 asgn number 2"
 readme = "README.md"
 requires-python = ">=3.12"
 dependencies = [
+    "matplotlib>=3.10.8",
     "pillow>=12.1.0",
     "pycryptodome>=3.23.0",
     "requests>=2.32.5",

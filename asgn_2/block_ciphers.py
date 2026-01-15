@@ -72,10 +72,9 @@ def show_img(image: ndarray):
     plt.imshow(image)
     plt.axis("off")
     plt.show()
-    return
 
 
-def get_header(filename: str):
+def get_header(filename: str) -> tuple:
     # helpful link: https://stackoverflow.com/questions/47003833/how-to-read-bmp-file-header-in-python
     with open(content_dir + "/" + filename, "rb") as f:
         raw_data = f.read()
@@ -89,11 +88,19 @@ def get_body(image) -> ndarray:
 
 def encrypt_img_ecb(key: bytes, img: NDArray) -> ndarray:
     cipher = AES.new(key, AES.MODE_ECB)
-    padding_length = (16 - len(img) % 16) % 16
+    padding_length = (16 - len(img) % 16) % 16  # 0..15 is the range of this.
 
+    # PKCS#7 padding: https://node-security.com/posts/cryptography-pkcs-7-padding/
     img_padded = img.tobytes() + bytes([padding_length]) * padding_length
 
-    bytes_under_cipher = cipher.encrypt(img_padded)
+    bytes_under_cipher = bytes()
+    for i in range(0, len(img_padded), 16):
+        bytes_under_cipher += cipher.encrypt(img_padded[i : i + 16])
+
+    # DEBUG: just let crypto do the magic here
+    # bytes_under_cipher = cipher.encrypt(img_padded)
+
+    # print(len(bytes_under_cipher))
 
     encrypted_image_bytes = bytes_under_cipher[: len(img.tobytes())]
 

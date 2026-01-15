@@ -45,6 +45,8 @@ from Crypto.Hash import HMAC, SHA256
 from Crypto.Random import get_random_bytes
 from PIL import Image
 import matplotlib.pyplot as plt
+import struct
+import numpy as np
 
 content_dir = os.path.join(os.getcwd(), "content")
 cp_logo_path = Path(content_dir + "/cp-logo.bmp")
@@ -56,19 +58,36 @@ def getFile(file_input):
   try:
     #helpful link 1: https://stackoverflow.com/questions/47003833/how-to-read-bmp-file-header-in-python
     file_data = Image.open(content_dir + "/" + file_input)
-    plt.imshow(file_data)
-    plt.axis("off")
-    plt.show()
     return file_data
   except FileNotFoundError:
     print("File not found")
     return -1
 
+def showImg(image):
+  plt.imshow(image)
+  plt.axis("off")
+  plt.show()
+  return
+
+def getHeader(file_input):
+  #helpful link: https://stackoverflow.com/questions/47003833/how-to-read-bmp-file-header-in-python
+  with open(content_dir + "/" + file_input, "rb") as f:
+    raw_data = f.read()
+  header_data = struct.unpack('<2sIHHIIIIHHIIIIII', raw_data[:54])
+  return header_data
+
+def getBody(image):
+  return np.asarray(image)
+
 def main():
   '''1) take a (plaintext) file'''
   file_input = input("Enter file name (either 'mustang.bmp' or 'cp-logo.bmp'): ")
   file_data = getFile(file_input)
-
+  print(file_data)
+  header_data= getHeader(file_input)
+  print(header_data)
+  body_data = getBody(file_data)
+  print(body_data)
 
   '''2) generate a random key (and random IV, in the case of CBC)'''
   #helpful link 1: https://www.pycryptodome.org/src/examples#encrypt-data-with-aes

@@ -38,6 +38,8 @@ Additional Notes:
 import os
 import struct
 import time
+from ast import Return
+from mimetypes import encodings_map
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -53,70 +55,71 @@ content_dir = os.path.join(os.getcwd(), "content")
 cp_logo_path = Path(content_dir + "/cp-logo.bmp")
 mustang_logo_path = Path(content_dir + "/mustang.bmp")
 
-"""attempt to open .bmp file from /content"""
 
-
-def getFile(file_input):
-    print("Requested file: " + file_input)
+def get_file(filename):
+    """attempt to open .bmp file from /content"""
+    print("Requested file: " + filename)
     try:
         # helpful link 1: https://stackoverflow.com/questions/47003833/how-to-read-bmp-file-header-in-python
-        file_data = Image.open(content_dir + "/" + file_input)
+        file_data = Image.open(content_dir + "/" + filename)
         return file_data
     except FileNotFoundError:
         print("File not found")
         return -1
 
 
-def showImg(image):
+def show_img(image: ndarray):
     plt.imshow(image)
     plt.axis("off")
     plt.show()
     return
 
 
-def getHeader(file_input):
+def get_header(filename: str):
     # helpful link: https://stackoverflow.com/questions/47003833/how-to-read-bmp-file-header-in-python
-    with open(content_dir + "/" + file_input, "rb") as f:
+    with open(content_dir + "/" + filename, "rb") as f:
         raw_data = f.read()
     header_data = struct.unpack("<2sIHHIIIIHHIIIIII", raw_data[:54])
     return header_data
 
 
-def getBody(image):
+def get_body(image) -> ndarray:
     return np.asarray(image)
+
+
+def encrypt(key: bytes, img: NDArray) -> ndarray:
+    cipher = AES.new(key, AES.MODE_ECB)
+    padding_length = (16 - len(img) % 16) % 16
+
+    img_padded = img.tobytes() + bytes([padding_length]) * padding_length
+
+    bytes_under_cipher = cipher.encrypt(img_padded)
+
+    encrypted_image_bytes = bytes_under_cipher[: len(img.tobytes())]
+
+    encrypted_img = np.frombuffer(encrypted_image_bytes, dtype=np.uint8).reshape(
+        img.shape
+    )
+
+    return encrypted_img
 
 
 def main():
     """1) take a (plaintext) file"""
-    file_input = input("Enter file name (either 'mustang.bmp' or 'cp-logo.bmp'): ")
-    file_data = getFile(file_input)
+    filename = input("Enter file name (either 'mustang.bmp' or 'cp-logo.bmp'): ")
+    file_data = get_file(filename)
     # print(file_data)
-    header_data = getHeader(file_input)
+    header_data = get_header(filename)
     # print(header_data)
-    body_data = getBody(file_data)
+    body_data = get_body(file_data)
     # print(body_data)
 
     """2) generate a random key (and random IV, in the case of CBC)"""
-    aes_key = get_random_bytes(16)
-    cipher = AES.new(aes_key, AES.MODE_ECB)
+    ecb_key = get_random_bytes(16)
 
-    # print(cipher)
+    encrypted_img = encrypt(ecb_key, body_data)
 
-    # body_dims = body_data.shape
-
-    padding_length = (16 - len(body_data) % 16) % 16
-
-    img_padded = body_data.tobytes() + bytes([padding_length]) * padding_length
-
-    bytes_under_cipher = cipher.encrypt(img_padded)
-
-    encrypted_image_bytes = bytes_under_cipher[: len(body_data.tobytes())]
-
-    encrypted_img = np.frombuffer(encrypted_image_bytes, dtype=np.uint8).reshape(
-        body_data.shape
-    )
-
-    showImg(encrypted_img)
+    show_img(encrypted_img)
 
     # helpful link 1: https://www.pycryptodome.org/src/examples#encrypt-data-with-aes
     # helpful link 2: https://pycryptodome.readthedocs.io/en/latest/src/cipher/classic.html#ecb-mode

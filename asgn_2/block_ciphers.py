@@ -45,6 +45,8 @@ import numpy as np
 from Crypto.Cipher import AES
 from Crypto.Hash import HMAC, SHA256
 from Crypto.Random import get_random_bytes
+from numpy._core import ndarray
+from numpy._typing import NDArray
 from PIL import Image
 
 content_dir = os.path.join(os.getcwd(), "content")
@@ -97,8 +99,24 @@ def main():
     """2) generate a random key (and random IV, in the case of CBC)"""
     aes_key = get_random_bytes(16)
     cipher = AES.new(aes_key, AES.MODE_ECB)
-    print(cipher)
-    print(cipher.encrypt("Hello, world!!!!".encode()))
+
+    # print(cipher)
+
+    # body_dims = body_data.shape
+
+    padding_length = (16 - len(body_data) % 16) % 16
+
+    img_padded = body_data.tobytes() + bytes([padding_length]) * padding_length
+
+    bytes_under_cipher = cipher.encrypt(img_padded)
+
+    encrypted_image_bytes = bytes_under_cipher[: len(body_data.tobytes())]
+
+    encrypted_img = np.frombuffer(encrypted_image_bytes, dtype=np.uint8).reshape(
+        body_data.shape
+    )
+
+    showImg(encrypted_img)
 
     # helpful link 1: https://www.pycryptodome.org/src/examples#encrypt-data-with-aes
     # helpful link 2: https://pycryptodome.readthedocs.io/en/latest/src/cipher/classic.html#ecb-mode

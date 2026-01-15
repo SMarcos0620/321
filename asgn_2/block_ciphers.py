@@ -7,8 +7,7 @@ Original file is located at
     https://colab.research.google.com/drive/1_eyZQTY6t9bKq-5ChL6vDNUA3CA1Hfj-
 """
 
-
-'''
+"""
 ----- TASK 1 -----
 In this task, you will explore the differences in
 security attained by the ECB and CBC modes of encryption. Using the AES-128
@@ -34,64 +33,76 @@ Additional Notes:
 - to account for plaintexts that are not an integral size of AES's block size,
     implement PKCS#7 padding
 
-'''
+"""
 
 import os
-from pathlib import Path
+import struct
 import time
+from pathlib import Path
 
+import matplotlib.pyplot as plt
+import numpy as np
 from Crypto.Cipher import AES
 from Crypto.Hash import HMAC, SHA256
 from Crypto.Random import get_random_bytes
 from PIL import Image
-import matplotlib.pyplot as plt
-import struct
-import numpy as np
 
 content_dir = os.path.join(os.getcwd(), "content")
 cp_logo_path = Path(content_dir + "/cp-logo.bmp")
 mustang_logo_path = Path(content_dir + "/mustang.bmp")
 
-'''attempt to open .bmp file from /content'''
+"""attempt to open .bmp file from /content"""
+
+
 def getFile(file_input):
-  print("Requested file: " + file_input)
-  try:
-    #helpful link 1: https://stackoverflow.com/questions/47003833/how-to-read-bmp-file-header-in-python
-    file_data = Image.open(content_dir + "/" + file_input)
-    return file_data
-  except FileNotFoundError:
-    print("File not found")
-    return -1
+    print("Requested file: " + file_input)
+    try:
+        # helpful link 1: https://stackoverflow.com/questions/47003833/how-to-read-bmp-file-header-in-python
+        file_data = Image.open(content_dir + "/" + file_input)
+        return file_data
+    except FileNotFoundError:
+        print("File not found")
+        return -1
+
 
 def showImg(image):
-  plt.imshow(image)
-  plt.axis("off")
-  plt.show()
-  return
+    plt.imshow(image)
+    plt.axis("off")
+    plt.show()
+    return
+
 
 def getHeader(file_input):
-  #helpful link: https://stackoverflow.com/questions/47003833/how-to-read-bmp-file-header-in-python
-  with open(content_dir + "/" + file_input, "rb") as f:
-    raw_data = f.read()
-  header_data = struct.unpack('<2sIHHIIIIHHIIIIII', raw_data[:54])
-  return header_data
+    # helpful link: https://stackoverflow.com/questions/47003833/how-to-read-bmp-file-header-in-python
+    with open(content_dir + "/" + file_input, "rb") as f:
+        raw_data = f.read()
+    header_data = struct.unpack("<2sIHHIIIIHHIIIIII", raw_data[:54])
+    return header_data
+
 
 def getBody(image):
-  return np.asarray(image)
+    return np.asarray(image)
+
 
 def main():
-  '''1) take a (plaintext) file'''
-  file_input = input("Enter file name (either 'mustang.bmp' or 'cp-logo.bmp'): ")
-  file_data = getFile(file_input)
-  print(file_data)
-  header_data= getHeader(file_input)
-  print(header_data)
-  body_data = getBody(file_data)
-  print(body_data)
+    """1) take a (plaintext) file"""
+    file_input = input("Enter file name (either 'mustang.bmp' or 'cp-logo.bmp'): ")
+    file_data = getFile(file_input)
+    # print(file_data)
+    header_data = getHeader(file_input)
+    # print(header_data)
+    body_data = getBody(file_data)
+    # print(body_data)
 
-  '''2) generate a random key (and random IV, in the case of CBC)'''
-  #helpful link 1: https://www.pycryptodome.org/src/examples#encrypt-data-with-aes
-  #helpful link 2: https://pycryptodome.readthedocs.io/en/latest/src/cipher/classic.html#ecb-mode
+    """2) generate a random key (and random IV, in the case of CBC)"""
+    aes_key = get_random_bytes(16)
+    cipher = AES.new(aes_key, AES.MODE_ECB)
+    print(cipher)
+    print(cipher.encrypt("Hello, world!!!!".encode()))
+
+    # helpful link 1: https://www.pycryptodome.org/src/examples#encrypt-data-with-aes
+    # helpful link 2: https://pycryptodome.readthedocs.io/en/latest/src/cipher/classic.html#ecb-mode
+
 
 if __name__ == "__main__":
     main()

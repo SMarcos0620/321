@@ -87,7 +87,7 @@ def get_body(image) -> ndarray:
     return np.asarray(image)
 
 
-def encrypt(key: bytes, img: NDArray) -> ndarray:
+def encrypt_img_ecb(key: bytes, img: NDArray) -> ndarray:
     cipher = AES.new(key, AES.MODE_ECB)
     padding_length = (16 - len(img) % 16) % 16
 
@@ -115,9 +115,9 @@ def main():
     # print(body_data)
 
     """2) generate a random key (and random IV, in the case of CBC)"""
-    ecb_key = get_random_bytes(16)
+    key = get_random_bytes(16)
 
-    encrypted_img = encrypt(ecb_key, body_data)
+    encrypted_img = encrypt_img_ecb(key, body_data)
 
     show_img(encrypted_img)
 

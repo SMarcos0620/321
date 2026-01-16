@@ -156,6 +156,7 @@ def main():
     # print(body_data)
 
 
+    img = body_data
     for i in range(10):
         """2) generate a random key (and random IV, in the case of CBC)"""
         key = get_random_bytes(16)
@@ -167,6 +168,7 @@ def main():
         body_data = img
     show_img(img, filename)
 
+    file_data.close()
     # helpful link 1: https://www.pycryptodome.org/src/examples#encrypt-data-with-aes
     # helpful link 2: https://pycryptodome.readthedocs.io/en/latest/src/cipher/classic.html#ecb-mode
 

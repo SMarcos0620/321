@@ -50,13 +50,14 @@ from Crypto.Random import get_random_bytes
 from numpy._core import ndarray
 from numpy._typing import NDArray
 from PIL import Image
+from PIL.ImageFile import ImageFile
 
 content_dir = os.path.join(os.getcwd(), "content")
 cp_logo_path = Path(content_dir + "/cp-logo.bmp")
 mustang_logo_path = Path(content_dir + "/mustang.bmp")
 
 
-def get_file(filename):
+def get_file(filename) -> ImageFile | None:
     """attempt to open .bmp file from /content"""
     print("Requested file: " + filename)
     try:
@@ -65,7 +66,7 @@ def get_file(filename):
         return file_data
     except FileNotFoundError:
         print("File not found")
-        return -1
+        return None
 
 
 def show_img(image: ndarray, file_name):
@@ -87,27 +88,25 @@ def get_body(image) -> ndarray:
     return np.asarray(image)
 
 
-def encrypt_img_ecb(key: bytes, img: NDArray) -> ndarray:
+def encrypt_ecb(key: bytes, data: NDArray) -> ndarray:
     cipher = AES.new(key, AES.MODE_ECB)
-    padding_length = (16 - len(img) % 16) % 16  # 0..15 is the range of this.
+    padding_length = (16 - len(data) % 16) % 16  # 0..15 is the range of this.
 
     # PKCS#7 padding: https://node-security.com/posts/cryptography-pkcs-7-padding/
-    img_padded = img.tobytes() + bytes([padding_length]) * padding_length
+    data_padded = data.tobytes() + bytes([padding_length]) * padding_length
 
     bytes_under_cipher = bytes()
-    for i in range(0, len(img_padded), 16):
-        bytes_under_cipher += cipher.encrypt(img_padded[i : i + 16])
+    for i in range(0, len(data_padded), 16):
+        bytes_under_cipher += cipher.encrypt(data_padded[i : i + 16])
 
     # DEBUG: just let crypto do the magic here
     # bytes_under_cipher = cipher.encrypt(img_padded)
 
-    encrypted_image_bytes = bytes_under_cipher[: len(img.tobytes())]
+    encrypted_bytes = bytes_under_cipher[: len(data.tobytes())]
 
-    encrypted_img = np.frombuffer(encrypted_image_bytes, dtype=np.uint8).reshape(
-        img.shape
-    )
+    encrypted_data = np.frombuffer(encrypted_bytes, dtype=np.uint8).reshape(data.shape)
 
-    return encrypted_img
+    return encrypted_data
 
 
 def xor_bytes(a: bytes, b: bytes) -> bytes:
@@ -118,31 +117,35 @@ def xor_bytes(a: bytes, b: bytes) -> bytes:
     return out
 
 
-def encrypt_img_cbc(key: bytes, img: NDArray, IV: bytes) -> ndarray:
+def encrypt_cbc(key: bytes, data: NDArray, IV: bytes, rounds: int) -> ndarray:
     cipher = AES.new(key, AES.MODE_ECB)
-    padding_length = (16 - len(img) % 16) % 16  # 0..15 is the range of this.
 
-    # PKCS#7 padding: https://node-security.com/posts/cryptography-pkcs-7-padding/
-    img_padded = img.tobytes() + bytes([padding_length]) * padding_length
+    for _ in range(rounds):
+        padding_length = (16 - len(data) % 16) % 16  # 0..15 is the range of this.
 
-    bytes_under_cipher = bytes()
-    prev_bytes = IV
-    for i in range(0, len(img_padded), 16):
-        chunk = cipher.encrypt(img_padded[i : i + 16])
-        chunk = xor_bytes(chunk, prev_bytes)
-        bytes_under_cipher += chunk
-        prev_bytes = chunk
+        # PKCS#7 padding: https://node-security.com/posts/cryptography-pkcs-7-padding/
+        data_padded = data.tobytes() + bytes([padding_length]) * padding_length
 
-    # DEBUG: just let crypto do the magic here
-    # bytes_under_cipher = cipher.encrypt(img_padded)
+        bytes_under_cipher = bytes()
+        prev_bytes = IV
 
-    encrypted_image_bytes = bytes_under_cipher[: len(img.tobytes())]
+        for i in range(0, len(data_padded), 16):
+            chunk = cipher.encrypt(data_padded[i : i + 16])
+            chunk = xor_bytes(chunk, prev_bytes)
+            bytes_under_cipher += chunk
+            prev_bytes = chunk
 
-    encrypted_img = np.frombuffer(encrypted_image_bytes, dtype=np.uint8).reshape(
-        img.shape
-    )
+        # DEBUG: just let crypto do the magic here
+        # bytes_under_cipher = cipher.encrypt(img_padded)
 
-    return encrypted_img
+        encrypted_bytes = bytes_under_cipher[: len(data.tobytes())]
+
+        encrypted_data = np.frombuffer(encrypted_bytes, dtype=np.uint8).reshape(
+            data.shape
+        )
+        data = encrypted_data
+
+    return data
 
 
 def main():
@@ -155,20 +158,20 @@ def main():
     body_data = get_body(file_data)
     # print(body_data)
 
-
     img = body_data
-    for i in range(10):
-        """2) generate a random key (and random IV, in the case of CBC)"""
-        key = get_random_bytes(16)
+    # for i in range(10):
+    """2) generate a random key (and random IV, in the case of CBC)"""
+    key = get_random_bytes(16)
 
-        # encrypted_img_ecb = encrypt_img_ecb(key, body_data)
+    # encrypted_img_ecb = encrypt_img_ecb(key, body_data)
 
-        # show_img(encrypted_img_ecb)
-        img = encrypt_img_cbc(key, body_data, get_random_bytes(16))
-        body_data = img
+    # show_img(encrypted_img_ecb)
+    img = encrypt_cbc(key, body_data, get_random_bytes(16), 10)
+    body_data = img
     show_img(img, filename)
 
-    file_data.close()
+    if file_data is not None:
+        file_data.close()
     # helpful link 1: https://www.pycryptodome.org/src/examples#encrypt-data-with-aes
     # helpful link 2: https://pycryptodome.readthedocs.io/en/latest/src/cipher/classic.html#ecb-mode
 

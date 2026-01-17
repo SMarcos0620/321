@@ -26,12 +26,11 @@ def verify(encrypt: bytes, key: bytes, IV: bytes):
     # print(bin_val)
     # print(len(bin_val))
     url_val = bin_val.decode("ascii", "ignore")
-    # print(url_val)
-    val = urllib.parse.unquote(url_val)
-    # print(val)
+    print(url_val)
+    session_raw = urllib.parse.unquote(url_val)
 
     # remove PKCS#7 padding: https://node-security.com/posts/cryptography-pkcs-7-padding/
-    session_data = val.strip()
+    session_data = session_raw.strip()
     print(session_data)
 
     return ";admin=true;" in session_data
@@ -56,7 +55,8 @@ def main():
 
     enc = bytes(block0) + enc[16:]
     # print(inj)
-
+    print(len(bytes(block0)))
+    print(len("`q qgrzf5wR!2"))
     # print(enc)
 
     admin = verify(enc, key, iv)

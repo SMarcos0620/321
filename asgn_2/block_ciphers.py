@@ -88,12 +88,12 @@ def get_body(image) -> ndarray:
     return np.asarray(image)
 
 
-def encrypt_ecb(key: bytes, data: NDArray) -> ndarray:
+def encrypt_ecb(key: bytes, plaintext: bytes) -> bytes:
     cipher = AES.new(key, AES.MODE_ECB)
-    padding_length = (16 - len(data) % 16) % 16  # 0..15 is the range of this.
+    padding_length = (16 - len(plaintext) % 16) % 16  # 0..15 is the range of this.
 
     # PKCS#7 padding: https://node-security.com/posts/cryptography-pkcs-7-padding/
-    data_padded = data.tobytes() + bytes([padding_length]) * padding_length
+    data_padded = plaintext + bytes([padding_length]) * padding_length
 
     bytes_under_cipher = bytes()
     for i in range(0, len(data_padded), 16):
@@ -102,11 +102,9 @@ def encrypt_ecb(key: bytes, data: NDArray) -> ndarray:
     # DEBUG: just let crypto do the magic here
     # bytes_under_cipher = cipher.encrypt(img_padded)
 
-    encrypted_bytes = bytes_under_cipher[: len(data.tobytes())]
+    encrypted_bytes = bytes_under_cipher[: len(plaintext)]
 
-    encrypted_data = np.frombuffer(encrypted_bytes, dtype=np.uint8).reshape(data.shape)
-
-    return encrypted_data
+    return encrypted_bytes
 
 
 def xor_bytes(a: bytes, b: bytes) -> bytes:

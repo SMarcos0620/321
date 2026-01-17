@@ -115,7 +115,7 @@ def xor_bytes(a: bytes, b: bytes) -> bytes:
     return out
 
 
-def encrypt_cbc(key: bytes, plaintext: bytes, IV: bytes, rounds: int) -> bytes:
+def encrypt_cbc(key: bytes, plaintext: bytes, IV: bytes, rounds: int = 1) -> bytes:
     cipher = AES.new(key, AES.MODE_ECB)
 
     for _ in range(rounds):
@@ -128,15 +128,17 @@ def encrypt_cbc(key: bytes, plaintext: bytes, IV: bytes, rounds: int) -> bytes:
         prev_bytes = IV
 
         for i in range(0, len(data_padded), 16):
-            chunk = cipher.encrypt(data_padded[i : i + 16])
+            chunk = data_padded[i : i + 16]
             chunk = xor_bytes(chunk, prev_bytes)
+            chunk = cipher.encrypt(chunk)
+
             bytes_under_cipher += chunk
             prev_bytes = chunk
 
         # DEBUG: just let crypto do the magic here
         # bytes_under_cipher = cipher.encrypt(img_padded)
 
-        encrypted_bytes = bytes_under_cipher[: len(plaintext)]
+        encrypted_bytes = bytes_under_cipher[:]
 
         plaintext = encrypted_bytes
 
@@ -161,7 +163,9 @@ def main():
     # encrypted_img_ecb = encrypt_img_ecb(key, body_data)
 
     # show_img(encrypted_img_ecb)
-    encrypted_bytes = encrypt_cbc(key, body_data.tobytes(), get_random_bytes(16), 10)
+    encrypted_bytes = encrypt_cbc(key, body_data.tobytes(), get_random_bytes(16))[
+        : len(body_data.tobytes())
+    ]
 
     encrypted_img = np.frombuffer(encrypted_bytes, dtype=np.uint8).reshape(img.shape)
     show_img(encrypted_img, filename)

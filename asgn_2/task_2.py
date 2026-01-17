@@ -25,20 +25,40 @@ def verify(encrypt: bytes, key: bytes, IV: bytes):
     bin_val = cipher.decrypt(encrypt)
     # print(bin_val)
     # print(len(bin_val))
-    url_val = bin_val.decode("ascii")
+    url_val = bin_val.decode("ascii", "ignore")
     # print(url_val)
     val = urllib.parse.unquote(url_val)
     # print(val)
 
     # remove PKCS#7 padding: https://node-security.com/posts/cryptography-pkcs-7-padding/
-    #
     session_data = val.strip()
+    print(session_data)
 
     return ";admin=true;" in session_data
 
 
 def main():
-    enc, key, iv = submit("my data is my data, not your data, buddy")
+    print(len(urllib.parse.quote("userid=456;").encode()))
+    print(len(urllib.parse.quote("admin=true;").encode()))
+    enc, key, iv = submit("a" * 26)
+
+    block0 = bytearray(enc[0:16])
+    # We are going to target block 1.
+    block0_original = urllib.parse.quote("userid=456;").encode()
+    target = urllib.parse.quote("admin=true;").encode()
+
+    for i in range(
+        len(urllib.parse.quote("admin=true;").encode())
+    ):  # Only flip the first 11 bytes we care about
+        block0[i] ^= block0_original[i] ^ target[i]
+
+    # print(enc)
+
+    enc = bytes(block0) + enc[16:]
+    # print(inj)
+
+    # print(enc)
+
     admin = verify(enc, key, iv)
     print(admin)
     pass

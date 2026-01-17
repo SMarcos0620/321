@@ -22,22 +22,25 @@ def verify(encrypt: bytes, key: bytes, IV: bytes):
     cipher = AES.new(key, AES.MODE_CBC, IV)
     # print(encrypt)
 
-    # PKCS#7 padding: https://node-security.com/posts/cryptography-pkcs-7-padding/
-
     bin_val = cipher.decrypt(encrypt)
     # print(bin_val)
     # print(len(bin_val))
     url_val = bin_val.decode("ascii")
-    print(url_val)
+    # print(url_val)
     val = urllib.parse.unquote(url_val)
     # print(val)
-    return val
+
+    # remove PKCS#7 padding: https://node-security.com/posts/cryptography-pkcs-7-padding/
+    #
+    session_data = val.strip()
+
+    return ";admin=true;" in session_data
 
 
 def main():
-    enc, key, iv = submit("mytext")
-    decode = verify(enc, key, iv)
-    print(decode)
+    enc, key, iv = submit("my data is my data, not your data, buddy")
+    admin = verify(enc, key, iv)
+    print(admin)
     pass
 
 

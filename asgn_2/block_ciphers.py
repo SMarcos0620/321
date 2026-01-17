@@ -160,12 +160,14 @@ def main():
     """2) generate a random key (and random IV, in the case of CBC)"""
     key = get_random_bytes(16)
 
-    # encrypted_img_ecb = encrypt_img_ecb(key, body_data)
-
-    # show_img(encrypted_img_ecb)
     encrypted_bytes = encrypt_cbc(key, body_data.tobytes(), get_random_bytes(16))[
         : len(body_data.tobytes())
     ]
+
+    # encrypted_bytes = encrypt_ecb(
+    #     key,
+    #     body_data.tobytes(),
+    # )[: len(body_data.tobytes())]
 
     encrypted_img = np.frombuffer(encrypted_bytes, dtype=np.uint8).reshape(img.shape)
     show_img(encrypted_img, filename)

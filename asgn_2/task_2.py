@@ -62,22 +62,11 @@ def verify(encrypt: bytes, key: bytes, IV: bytes):
     #(2) parse the string for ';admin=true;' and (3) return true/false
     return ";admin=true;" in session_data
 
-
-def main():
-    print(len(urllib.parse.quote("userid=456;").encode()))
-    print(len(urllib.parse.quote("admin=true;").encode()))
-    user_input = input("Enter text: ")
-    enc, key, iv = submit(user_input * 26)
-
-    admin = verify(enc, key, iv)
-    print("\nverify() returned: ", end="")
-    print(admin)
-
-    #the rest of main is the attack
-    '''
+def bit_flip(enc: bytes):
+    
     block0 = bytearray(enc[0:16])
-    # We are going to target block 1.
-    block0_original = urllib.parse.quote("userid=456;").encode()
+    # We are going to target block 1
+    block0_original = urllib.parse.quote(";userdata=").encode()
     target = urllib.parse.quote("admin=true;").encode()
 
     for i in range(
@@ -92,11 +81,27 @@ def main():
     print(len(bytes(block0)))
     print(len("`q qgrzf5wR!2"))
     # print(enc)
+    return enc
+
+    
+
+def main():
+    print(len(urllib.parse.quote("userid=456;").encode()))
+    print(len(urllib.parse.quote("admin=true;").encode()))
+    user_input = input("Enter text: ")
+    enc, key, iv = submit(user_input * 26)
 
     admin = verify(enc, key, iv)
     print("\nverify() returned: ", end="")
     print(admin)
-    '''
+
+    #the rest of main is the attack
+    
+    
+    admin = verify(bit_flip(enc), key, iv)
+    print("\nverify() returned: ", end="")
+    print(admin)
+    
     pass
 
 

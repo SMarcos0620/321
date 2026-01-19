@@ -5,12 +5,22 @@ from Crypto.Cipher import AES
 
 import block_ciphers
 
-
+'''
+1. Takes an arbitrary string provided by the user
+2. prepends "userid=456;userdata="
+3. appends ";session-id=31337"
+'''
 def submit(text: str) -> tuple[bytes, bytes, bytes]:
     begin = "userid=456;userdata="
     end = ";session-id=31337"
-    url_text = urllib.parse.quote(begin + text + end)
-    # print(len(url_text))
+    created_string = begin + text + end
+    #print("Created string: " + created_string)
+    
+    #(1) URL encode any ';' and '=' characters that appear in the user provided string
+    url_text = urllib.parse.quote(created_string)
+    #print("Length: ")
+    #print(len(url_text))
+
     plaintext = url_text.encode()
 
     key = randbytes(16)
@@ -26,12 +36,12 @@ def verify(encrypt: bytes, key: bytes, IV: bytes):
     # print(bin_val)
     # print(len(bin_val))
     url_val = bin_val.decode("ascii", "ignore")
-    print(url_val)
+    print("\nurl_val from verify(): " + url_val)
     session_raw = urllib.parse.unquote(url_val)
 
     # remove PKCS#7 padding: https://node-security.com/posts/cryptography-pkcs-7-padding/
     session_data = session_raw.strip()
-    print(session_data)
+    print("\nno PKCS#7 padding: " + session_data)
 
     return ";admin=true;" in session_data
 
@@ -39,7 +49,8 @@ def verify(encrypt: bytes, key: bytes, IV: bytes):
 def main():
     print(len(urllib.parse.quote("userid=456;").encode()))
     print(len(urllib.parse.quote("admin=true;").encode()))
-    enc, key, iv = submit("a" * 26)
+    user_input = input("Enter text: ")
+    enc, key, iv = submit(user_input * 26)
 
     block0 = bytearray(enc[0:16])
     # We are going to target block 1.
@@ -60,6 +71,7 @@ def main():
     # print(enc)
 
     admin = verify(enc, key, iv)
+    print("\nverify() returned: ", end="")
     print(admin)
     pass
 

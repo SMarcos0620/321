@@ -44,6 +44,7 @@ from pathlib import Path
 
 import matplotlib.pyplot as plt
 import numpy as np
+import PIL
 from Crypto.Cipher import AES
 from Crypto.Hash import HMAC, SHA256
 from Crypto.Random import get_random_bytes
@@ -142,7 +143,7 @@ def encrypt_cbc(key: bytes, plaintext: bytes, IV: bytes, rounds: int = 1) -> byt
 
         plaintext = encrypted_bytes
 
-        #print(plaintext)
+        # print(plaintext)
 
     return plaintext
 
@@ -158,11 +159,11 @@ def main():
     # print(body_data)
 
     img = body_data
-    
+
     # for i in range(10):
     """2) generate a random key (and random IV, in the case of CBC)"""
     key = get_random_bytes(16)
-    #print(body_data.tobytes())
+    # print(body_data.tobytes())
 
     encrypted_bytes = encrypt_cbc(key, body_data.tobytes(), get_random_bytes(16))[
         : len(body_data.tobytes())
@@ -179,13 +180,14 @@ def main():
     if file_data is not None:
         file_data.close()
 
-    #write the encryption of the plaintext in a new file
-    with open("encrypted.bmp", "wb") as enc_file:
-        enc_file.write(encrypted_img.tobytes())
+    # write the encryption of the plaintext in a new file
+    fn = "encrypted.bmp"
+    # open(fn, "wb")
+    im = Image.fromarray(encrypted_img, "RGB")
+    im.save(fn)
+
     # helpful link 1: https://www.pycryptodome.org/src/examples#encrypt-data-with-aes
     # helpful link 2: https://pycryptodome.readthedocs.io/en/latest/src/cipher/classic.html#ecb-mode
-
-
 
 
 if __name__ == "__main__":

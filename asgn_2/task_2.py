@@ -83,8 +83,7 @@ def bit_flip(ciphertext: bytes) -> bytes:
 def main():
     # print(len(urllib.parse.quote("userid=456;").encode()))
     # print(len(urllib.parse.quote("admin=true;").encode()))
-    #user_input = "Here's an example of user input: basic, I know..."
-    user_input = input("Enter text: ")
+    user_input = "Here's an example of user input: basic, I know..."
     enc, key, iv = submit(user_input)
 
     admin = verify(enc, key, iv)
@@ -98,8 +97,7 @@ def main():
     # will decode down to url syntax
     #
     # we use the 'm' character as a non-url-encoded buffer, and the 'X' character to denote our target.
-    attack_target = "mmmmmmmXadminXtrue;" + user_input + ''
-    enc, key, iv = submit(attack_target)
+    enc, key, iv = submit("mmmmmmmXadminXfalse")
 
     admin = verify(bit_flip(enc), key, iv)
     print("\nverify() returned: ", end="")

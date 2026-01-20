@@ -1,4 +1,4 @@
-# TINC : TINC Is Not Cool CSC 321 Assignment Repo
+# Isaac Pruett and Sami Marcos CSC 321 Assignment Repo
 
 Ensure that you have (uv)[https://docs.astral.sh/uv/] installed on your machine.
 

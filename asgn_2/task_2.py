@@ -43,12 +43,9 @@ def verify(encrypt: bytes, key: bytes, IV: bytes):
     bin_val = cipher.decrypt(encrypt)
 
     # remove PKCS#7 padding: https://node-security.com/posts/cryptography-pkcs-7-padding/
-    # print(int(bin_val[len(bin_val) - 1]))
-    # print(bin_val)
-    # print(bin_val[: len(bin_val) - int(bin_val[len(bin_val) - 1])])
+
     bin_val = bin_val[: len(bin_val) - int(bin_val[len(bin_val) - 1])]
-    # print(bin_val)
-    # print(len(bin_val))
+
     url_val = bin_val.decode("ascii", "replace")
     print("\nurl_val from verify(): " + url_val)
     session_raw = urllib.parse.unquote(url_val)
@@ -63,14 +60,17 @@ def bit_flip(ciphertext: bytes) -> bytes:
     We know that our input string will be: mmmmmmmXadminXtrue, where we need to
     flip the appropriate bits in prior blocks in order to swap the X's for appropriate symbols
     """
-    mut_ciphertext = bytearray(ciphertext)
+    mut_ciphertext = bytearray(
+        ciphertext
+    )  # yes i know i could have found a better name but Rust habits die hard
 
+    # targets of user input values encoded as 'X' chars, but as ints this time.
     flips_needed = [
         (33, "X", ";"),
         (39, "X", "="),
     ]
 
-    # NOTE: the whole string to be evaluated is: userid=456;userdata=XadminXtrueX;session-id=31337
+    # NOTE: the whole string to be evaluated is: userid=456;userdata=mmmmmmmXadminXtrue;session-id=31337
 
     for pos, original, target in flips_needed:
         block_1_pos = pos - 16  # goto the previous block
@@ -95,10 +95,12 @@ def main():
     # we need to manipulate the input to
     # substitute the bits that
     # will decode down to url syntax
+    #
+    # we use the 'm' character as a non-url-encoded buffer, and the 'X' character to denote our target.
     enc, key, iv = submit("mmmmmmmXadminXtrue")
 
     admin = verify(bit_flip(enc), key, iv)
-    print("\nverify() returned: ", end="\n")
+    print("\nverify() returned: ", end="")
     print(str(admin) + "\n")
 
     pass

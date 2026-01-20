@@ -83,7 +83,8 @@ def bit_flip(ciphertext: bytes) -> bytes:
 def main():
     # print(len(urllib.parse.quote("userid=456;").encode()))
     # print(len(urllib.parse.quote("admin=true;").encode()))
-    user_input = "Here's an example of user input: basic, I know..."
+    #user_input = "Here's an example of user input: basic, I know..."
+    user_input = input("Enter text: ")
     enc, key, iv = submit(user_input)
 
     admin = verify(enc, key, iv)

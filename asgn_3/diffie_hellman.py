@@ -32,7 +32,11 @@ def main():
     
     #alice calculates and sends Bob number A =ga mod p
     number_A = get_secret_key(GLOBAL_BASE_G, alice_a, GLOBAL_MOD_P)
+
+    #bob calculates and sends alice the number B = gb mod p
+    number_B = get_secret_key(GLOBAL_BASE_G, bob_b, GLOBAL_MOD_P)
     print(number_A)
+    print(number_B)
     message = "Hello world"
     IV = randbytes(16)
 

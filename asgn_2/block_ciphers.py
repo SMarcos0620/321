@@ -69,6 +69,7 @@ def get_file(filename) -> ImageFile | None:
         return None
 
 
+#use matplotlib to display the image
 def show_img(image: ndarray, file_name):
     plt.title(file_name)
     plt.imshow(image)
@@ -84,6 +85,7 @@ def get_header(filename: str) -> tuple:
     return header_data
 
 
+#put the image body data into an array
 def get_body(image) -> ndarray:
     return np.asarray(image)
 
@@ -95,6 +97,7 @@ def encrypt_ecb(key: bytes, plaintext: bytes) -> bytes:
     # PKCS#7 padding: https://node-security.com/posts/cryptography-pkcs-7-padding/
     data_padded = plaintext + bytes([padding_length]) * padding_length
 
+    #cipher
     bytes_under_cipher = bytes()
     for i in range(0, len(data_padded), 16):
         bytes_under_cipher += cipher.encrypt(data_padded[i : i + 16])
@@ -104,6 +107,7 @@ def encrypt_ecb(key: bytes, plaintext: bytes) -> bytes:
 
     encrypted_bytes = bytes_under_cipher[: len(plaintext)]
 
+    print(encrypted_bytes)
     return encrypted_bytes
 
 
@@ -127,6 +131,7 @@ def encrypt_cbc(key: bytes, plaintext: bytes, IV: bytes, rounds: int = 1) -> byt
         bytes_under_cipher = bytes()
         prev_bytes = IV
 
+        #chunks and encrypts each chunk
         for i in range(0, len(data_padded), 16):
             chunk = data_padded[i : i + 16]
             chunk = xor_bytes(chunk, prev_bytes)
@@ -138,13 +143,13 @@ def encrypt_cbc(key: bytes, plaintext: bytes, IV: bytes, rounds: int = 1) -> byt
         # DEBUG: just let crypto do the magic here
         # bytes_under_cipher = cipher.encrypt(img_padded)
 
-        encrypted_bytes = bytes_under_cipher[:]
+        encrypted_bytes = bytes_under_cipher
 
-        plaintext = encrypted_bytes
+        ciphertext = encrypted_bytes
 
-        #print(plaintext)
+        print(ciphertext)
 
-    return plaintext
+    return ciphertext
 
 
 def main():
@@ -164,7 +169,12 @@ def main():
     key = get_random_bytes(16)
     #print(body_data.tobytes())
 
+    '''
     encrypted_bytes = encrypt_cbc(key, body_data.tobytes(), get_random_bytes(16))[
+        : len(body_data.tobytes())
+    ]'''
+
+    encrypted_bytes = encrypt_ecb(key, body_data.tobytes())[
         : len(body_data.tobytes())
     ]
 

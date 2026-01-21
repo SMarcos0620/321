@@ -98,8 +98,11 @@ def main():
     # will decode down to url syntax
     #
     # we use the 'm' character as a non-url-encoded buffer, and the 'X' character to denote our target.
+    
     attack_target = "mmmmmmmXadminXtrue;" + user_input + ''
     enc, key, iv = submit(attack_target)
+    
+    
 
     admin = verify(bit_flip(enc), key, iv)
     print("\nverify() returned: ", end="")

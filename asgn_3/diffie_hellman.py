@@ -8,12 +8,12 @@ GLOBAL_MOD_P = 23
 GLOBAL_BASE_G = 5
 
 
-def get_secret_key(their_private_key: bytes, my_public_key: bytes, prime: int) -> bytes:
+def get_secret_key(my_private_key: bytes, thier_public_key: bytes, prime: int) -> bytes:
     """
     s = A^b mod p
     """
 
-    return bytes(int(my_public_key) ** int(their_private_key) % prime)
+    return bytes(int(thier_public_key) ** int(my_private_key) % prime)
 
 
 def get_public_key(private_key: bytes, base: int, prime: int) -> bytes:
@@ -35,6 +35,9 @@ def main():
 
     print(int.from_bytes(A))
     print(int.from_bytes(B))
+
+    get_secret_key()
+
     message = "Hello world"
     IV = randbytes(16)
 

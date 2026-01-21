@@ -1,3 +1,5 @@
+from random import randbytes
+
 from Crypto.Cipher import AES
 from Crypto.Hash import HMAC, SHA256
 from Crypto.Random import get_random_bytes
@@ -6,8 +8,27 @@ GLOBAL_MOD_P = 23
 GLOBAL_BASE_G = 5
 
 
+def get_secret_key(private_key, public_key, G, P) -> bytes:
+    pass
+
+
+def get_public_key(private_key: bytes, base: int, prime: int) -> bytes:
+    """
+    A = g^a mod p
+    """
+    val = (base ** int(private_key)) % prime
+    return bytes(val)
+
+
 def main():
+<<<<<<< Updated upstream
     message = "Hello world"
+=======
+    IV = randbytes(16)
+
+    cipher = AES.new()
+
+>>>>>>> Stashed changes
     pass
 
 

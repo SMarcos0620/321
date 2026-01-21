@@ -37,6 +37,7 @@ Additional Notes:
 
 import os
 import struct
+import sys
 import time
 from ast import Return
 from mimetypes import encodings_map
@@ -58,7 +59,11 @@ cp_logo_path = Path(content_dir + "/cp-logo.bmp")
 mustang_logo_path = Path(content_dir + "/mustang.bmp")
 
 
+<<<<<<< Updated upstream
 def get_file(filename) -> ImageFile | None:
+=======
+def get_file(filename) -> ImageFile:
+>>>>>>> Stashed changes
     """attempt to open .bmp file from /content"""
     print("Requested file: " + filename)
     try:
@@ -67,7 +72,11 @@ def get_file(filename) -> ImageFile | None:
         return file_data
     except FileNotFoundError:
         print("File not found")
+<<<<<<< Updated upstream
         return None
+=======
+        sys.exit(-1)
+>>>>>>> Stashed changes
 
 
 #use matplotlib to display the image
@@ -168,11 +177,17 @@ def main():
     # print(body_data)
 
     img = body_data
+<<<<<<< Updated upstream
 
     # for i in range(10):
     """2) generate a random key (and random IV, in the case of CBC)"""
     key = get_random_bytes(16)
     # print(body_data.tobytes())
+=======
+    for i in range(10):
+        """2) generate a random key (and random IV, in the case of CBC)"""
+        key = get_random_bytes(16)
+>>>>>>> Stashed changes
 
     '''
     encrypted_bytes = encrypt_cbc(key, body_data.tobytes(), get_random_bytes(16))[
@@ -202,6 +217,8 @@ def main():
 
     # helpful link 1: https://www.pycryptodome.org/src/examples#encrypt-data-with-aes
     # helpful link 2: https://pycryptodome.readthedocs.io/en/latest/src/cipher/classic.html#ecb-mode
+    #
+    file_data.close()
 
 
 if __name__ == "__main__":

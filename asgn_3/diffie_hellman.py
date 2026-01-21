@@ -13,7 +13,9 @@ def get_secret_key(my_private_key: bytes, thier_public_key: bytes, prime: int) -
     s = A^b mod p
     """
 
-    return bytes(int(thier_public_key) ** int(my_private_key) % prime)
+    return (
+        int.from_bytes(thier_public_key) ** int.from_bytes(my_private_key) % prime
+    ).to_bytes()
 
 
 def get_public_key(private_key: bytes, base: int, prime: int) -> bytes:
@@ -36,7 +38,9 @@ def main():
     print(int.from_bytes(A))
     print(int.from_bytes(B))
 
-    get_secret_key()
+    sa = int.from_bytes(get_secret_key(alice_a.to_bytes(), B, GLOBAL_MOD_P))
+    sb = int.from_bytes(get_secret_key(bob_b.to_bytes(), A, GLOBAL_MOD_P))
+    print(f"{sa} == {sb} ? {sa == sb}")
 
     message = "Hello world"
     IV = randbytes(16)

@@ -38,8 +38,12 @@ def main():
     print(int.from_bytes(A))
     print(int.from_bytes(B))
 
+    #Alice computes s = Ba mod p
     sa = int.from_bytes(get_secret_key(alice_a.to_bytes(), B, GLOBAL_MOD_P))
+    #bob computes s = Aa mod p
     sb = int.from_bytes(get_secret_key(bob_b.to_bytes(), A, GLOBAL_MOD_P))
+    #Alice and bob now share a secret number s
+    print("Shared secret key s: ", end = '')
     print(f"{sa} == {sb} ? {sa == sb}")
 
     message = "Hello world"

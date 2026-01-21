@@ -21,18 +21,13 @@ def get_public_key(private_key: bytes, base: int, prime: int) -> bytes:
 
 
 def main():
-<<<<<<< Updated upstream
     message = "Hello world"
-=======
     IV = randbytes(16)
 
     cipher = AES.new()
 
->>>>>>> Stashed changes
     pass
 
 
 if __name__ == "__main__":
     main()
-
-

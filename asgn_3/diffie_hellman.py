@@ -20,23 +20,21 @@ def get_public_key(private_key: bytes, base: int, prime: int) -> bytes:
     """
     A = g^a mod p
     """
-    val = (base ** int(private_key)) % prime
-    return bytes(val)
+    val = (base ** int.from_bytes(private_key)) % prime
+    return val.to_bytes()
 
 
 def main():
-    #alice chooses secret int a
+    # alice chooses secret int a
     alice_a = 4
-    #bob chooses secret int b
+    # bob chooses secret int b
     bob_b = 3
-    
-    #alice calculates and sends Bob number A =ga mod p
-    number_A = get_secret_key(GLOBAL_BASE_G, alice_a, GLOBAL_MOD_P)
 
-    #bob calculates and sends alice the number B = gb mod p
-    number_B = get_secret_key(GLOBAL_BASE_G, bob_b, GLOBAL_MOD_P)
-    print(number_A)
-    print(number_B)
+    A = get_public_key(alice_a.to_bytes(), GLOBAL_BASE_G, GLOBAL_MOD_P)
+    B = get_public_key(bob_b.to_bytes(), GLOBAL_BASE_G, GLOBAL_MOD_P)
+
+    print(int.from_bytes(A))
+    print(int.from_bytes(B))
     message = "Hello world"
     IV = randbytes(16)
 

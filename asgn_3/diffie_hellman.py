@@ -29,10 +29,14 @@ def main():
     alice_a = 4
     #bob chooses secret int b
     bob_b = 3
+    
+    #alice calculates and sends Bob number A =ga mod p
+    number_A = get_secret_key(GLOBAL_BASE_G, alice_a, GLOBAL_MOD_P)
+    print(number_A)
     message = "Hello world"
     IV = randbytes(16)
 
-    cipher = AES.new()
+    # cipher = AES.new()
 
     pass
 

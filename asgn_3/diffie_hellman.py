@@ -21,6 +21,10 @@ def get_public_key(private_key: bytes, base: int, prime: int) -> bytes:
 
 
 def main():
+    #alice chooses secret int a
+    alice_a = 4
+    #bob chooses secret int b
+    bob_b = 3
     message = "Hello world"
     IV = randbytes(16)
 

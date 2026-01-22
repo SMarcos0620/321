@@ -35,6 +35,7 @@ def get_secret_key(my_private_key: bytes, thier_public_key: bytes, prime: int) -
     val = int(
         int.from_bytes(thier_public_key) ** int.from_bytes(my_private_key) % prime
     )
+    # compute appropriate bit length and resize accordingly
     byte_length = (val.bit_length() + 7) // 8
     return val.to_bytes(byte_length, byteorder="big")
 
@@ -44,7 +45,7 @@ def get_public_key(private_key: bytes, base: int, prime: int) -> bytes:
     A = g^a mod p
     """
     val = int((base ** int.from_bytes(private_key)) % prime)
-
+    # compute appropriate bit length and resize accordingly
     byte_length = (val.bit_length() + 7) // 8
     return val.to_bytes(byte_length, byteorder="big")
 

@@ -18,4 +18,4 @@ D662A4D1 8E73AFA3 2D779D59 18D08BC8 858F4DCE F97C2A24
 855E6EEB 22B3B2E5""".replace(" ", "").replace("\n", ""),
     16,
 )
-GLOBAL_IV = randbytes(16)
+GLOBAL_IV = b"\xd0=\xa9<\x0c^nq\xcf6\xce\x18\xb7\x816'"  # randbytes(16)

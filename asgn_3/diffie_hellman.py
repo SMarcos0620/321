@@ -1,12 +1,15 @@
 from random import randbytes
+import sys
 
 from Crypto.Cipher import AES
 from Crypto.Hash import HMAC, SHA256
 from Crypto.Random import get_random_bytes
+from Crypto.Util.Padding import pad, unpad
 
 GLOBAL_MOD_P = 23
 GLOBAL_BASE_G = 5
-
+GLOBAL_IV = randbytes(16)
+CALCULATED_KEY = 0
 
 def get_secret_key(my_private_key: bytes, thier_public_key: bytes, prime: int) -> bytes:
     """
@@ -66,12 +69,37 @@ def main():
     print("Computed symmetric keys k: ", end = '')
     print(f"{trunc_ka} == {trunc_kb} ? {trunc_ka == trunc_kb}")
 
+    #check if the symmetric keys are the same
+    if (trunc_ka != trunc_kb):
+        print("symmetic keys are not the same")
+        sys.exit()
+    
+    #if they are the same, then update CALCULATED_KEY
+    CALCULATED_KEY = trunc_ka
 
-    message = "Hello world"
-    IV = randbytes(16)
+    #attempt to send messages to each other
+    message_from_alice = b"Hello Bob"
+    message_from_bob = b"Hello Alice"
 
-    # cipher = AES.new()
+    #encrypt
+    cipher_encrypt_alice = AES.new(CALCULATED_KEY, AES.MODE_CBC, GLOBAL_IV)
+    ciphertext_from_alice = cipher_encrypt_alice.encrypt(pad(message_from_alice, AES.block_size))
+    cipher_encrypt_bob = AES.new(CALCULATED_KEY, AES.MODE_CBC, GLOBAL_IV)
+    ciphertext_from_bob= cipher_encrypt_bob.encrypt(pad(message_from_bob, AES.block_size))
 
+    #decrypt
+    cipher_decrypt_alice = AES.new(CALCULATED_KEY, AES.MODE_CBC, GLOBAL_IV)
+    plaintext_recieved_by_alice = unpad(cipher_decrypt_alice.decrypt(ciphertext_from_bob), AES.block_size)
+    cipher_decrypt_bob= AES.new(CALCULATED_KEY, AES.MODE_CBC, GLOBAL_IV)
+    plaintext_recieved_by_bob = unpad(cipher_decrypt_bob.decrypt(ciphertext_from_alice), AES.block_size)
+
+
+    #verification
+    print(f"\nAlice sent: {message_from_alice}\nAlice recieved: {plaintext_recieved_by_alice}")
+    print(f"Verify message sent by Bob to Alice: {message_from_bob} == {plaintext_recieved_by_alice} ? {message_from_bob == plaintext_recieved_by_alice}")
+    print(f"\nBob sent: {message_from_bob}\nBob recieved: {plaintext_recieved_by_bob}")
+    print(f"Verify message sent by Alice to Bob: {message_from_alice} == {plaintext_recieved_by_bob} ? {message_from_alice == plaintext_recieved_by_bob}")
+    
     pass
 
 

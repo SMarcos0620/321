@@ -87,8 +87,9 @@ def main():
     kb_bytes = kb.digest()
     trunc_kb = bytearray(kb_bytes)[:16]
 
-    print("Computed symmetric keys k: ", end="")
-    print(f"{trunc_ka} == {trunc_kb} ? {trunc_ka == trunc_kb}")
+    print(
+        f"Computed symmetric keys k: {trunc_ka} == {trunc_kb} ? {trunc_ka == trunc_kb}"
+    )
 
     # check if the symmetric keys are the same
     if trunc_ka != trunc_kb:

@@ -39,12 +39,33 @@ def main():
     print(int.from_bytes(B))
 
     #Alice computes s = Ba mod p
-    sa = int.from_bytes(get_secret_key(alice_a.to_bytes(), B, GLOBAL_MOD_P))
+    secret_key_alice = get_secret_key(alice_a.to_bytes(), B, GLOBAL_MOD_P)
+    sa = int.from_bytes(secret_key_alice)
     #bob computes s = Aa mod p
-    sb = int.from_bytes(get_secret_key(bob_b.to_bytes(), A, GLOBAL_MOD_P))
+    secret_key_bob = get_secret_key(bob_b.to_bytes(), A, GLOBAL_MOD_P)
+    sb = int.from_bytes(secret_key_bob)
     #Alice and bob now share a secret number s
     print("Shared secret key s: ", end = '')
     print(f"{sa} == {sb} ? {sa == sb}")
+
+    #symmetric key, k = SHA 256(s)
+    #ka = key alice; kb = key bob
+    #Documentation: https://pycryptodome.readthedocs.io/en/latest/src/hash/sha256.html
+
+    #create an sha256 object, hash the data from secret_key_alice/bob, turn it into binary form/byte string, turn it into a byte array, truncate 16 bytes
+    ka = SHA256.new()
+    ka.update(secret_key_alice)
+    ka_bytes = ka.digest()
+    trunc_ka = bytearray(ka_bytes)[:16]
+    kb = SHA256.new()
+    kb.update(secret_key_bob)
+    kb_bytes = kb.digest()
+    trunc_kb = bytearray(kb_bytes)[:16]
+
+
+    print("Computed symmetric keys k: ", end = '')
+    print(f"{trunc_ka} == {trunc_kb} ? {trunc_ka == trunc_kb}")
+
 
     message = "Hello world"
     IV = randbytes(16)

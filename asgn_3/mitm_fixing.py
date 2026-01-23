@@ -1,6 +1,4 @@
-import random
 import sys
-from multiprocessing.spawn import import_main_path
 
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA256

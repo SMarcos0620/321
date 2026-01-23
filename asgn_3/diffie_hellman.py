@@ -5,7 +5,7 @@ from Crypto.Hash import HMAC, SHA256
 from Crypto.Random import get_random_bytes
 from Crypto.Util.Padding import pad, unpad
 
-from globals import GLOBAL_BASE_G, GLOBAL_IV, GLOBAL_MOD_P
+from globals import GLOBAL_IV, GLOBAL_MOD_Q, GLOBAL_BASE_α
 
 CALCULATED_KEY = 0
 
@@ -38,17 +38,17 @@ def main():
     # bob chooses secret int b
     bob_b = 3
 
-    A = get_public_key(alice_a.to_bytes(), GLOBAL_BASE_G, GLOBAL_MOD_P)
-    B = get_public_key(bob_b.to_bytes(), GLOBAL_BASE_G, GLOBAL_MOD_P)
+    A = get_public_key(alice_a.to_bytes(), GLOBAL_BASE_α, GLOBAL_MOD_Q)
+    B = get_public_key(bob_b.to_bytes(), GLOBAL_BASE_α, GLOBAL_MOD_Q)
 
     print(int.from_bytes(A))
     print(int.from_bytes(B))
 
     # Alice computes s = Ba mod p
-    secret_key_alice = get_secret_key(alice_a.to_bytes(), B, GLOBAL_MOD_P)
+    secret_key_alice = get_secret_key(alice_a.to_bytes(), B, GLOBAL_MOD_Q)
     sa = int.from_bytes(secret_key_alice)
     # bob computes s = Aa mod p
-    secret_key_bob = get_secret_key(bob_b.to_bytes(), A, GLOBAL_MOD_P)
+    secret_key_bob = get_secret_key(bob_b.to_bytes(), A, GLOBAL_MOD_Q)
     sb = int.from_bytes(secret_key_bob)
     # Alice and bob now share a secret number s
     print("Shared secret key s [Alice, Bob]: ", end="")

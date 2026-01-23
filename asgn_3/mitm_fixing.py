@@ -2,22 +2,23 @@ import random
 import sys
 from multiprocessing.spawn import import_main_path
 
+from Crypto.Cipher import AES
 from Crypto.Hash import SHA256
 from Crypto.Util.Padding import pad, unpad
-from Crypto.Cipher import AES
 
 from diffie_hellman import get_public_key, get_secret_key
-from globals import GLOBAL_BASE_G, GLOBAL_IV, GLOBAL_MOD_P
+from globals import GLOBAL_IV, GLOBAL_MOD_Q, GLOBAL_BASE_α
 
 TASK_1 = True
 
+
 def main():
-    #p = q
+    # p = q
     GLOBAL_MOD_Q = 7
-    #g = a
-    #GLOBAL_BASE_G = 7 * 3 * 7
-    #GLOBAL_BASE_G = 1
-    #GLOBAL_BASE_G = GLOBAL_MOD_P
+    # g = a
+    # GLOBAL_BASE_G = 7 * 3 * 7
+    # GLOBAL_BASE_G = 1
+    # GLOBAL_BASE_G = GLOBAL_MOD_P
     GLOBAL_BASE_α = GLOBAL_MOD_Q - 1
     # ^^ This speeds up runtime a lot.
 
@@ -34,10 +35,8 @@ def main():
 
     ###### MALLORY ####################
     # let M be Mallory's prime
-    if (TASK_1):
-        A = B = M = GLOBAL_MOD_Q.to_bytes(
-            (GLOBAL_MOD_Q.bit_length() + 7) // 8
-        )  
+    if TASK_1:
+        A = B = M = GLOBAL_MOD_Q.to_bytes((GLOBAL_MOD_Q.bit_length() + 7) // 8)
     # send q to both Bob and Alice
     # essentially makes the secret key computation: q mod q = 0
     ###################################
@@ -49,11 +48,11 @@ def main():
     secret_key_bob = get_secret_key(bob_b.to_bytes(), A, GLOBAL_MOD_Q)
     sb = int.from_bytes(secret_key_bob)
     # Alice and bob now share a secret number s
-    
-    ###### MALLORY ####################
-    #Mallory can now determine s, which is the secret key
 
-    #Mallory's secret int
+    ###### MALLORY ####################
+    # Mallory can now determine s, which is the secret key
+
+    # Mallory's secret int
     if TASK_1:
         mallory_m = 5
         secret_key_mallory = get_secret_key(mallory_m.to_bytes(), M, GLOBAL_MOD_Q)
@@ -62,25 +61,20 @@ def main():
 
     if TASK_1:
         print(
-            f'''Shared secret keys s [Alice, Bob, Mallory]: 
-            {sa} == {sb} == {sm} ? {sa == sb == sm}\n'''
-            
+            f"""Shared secret keys s [Alice, Bob, Mallory]:
+            {sa} == {sb} == {sm} ? {sa == sb == sm}\n"""
         )
-        if (sa != sb != sm):
+        if sa != sb != sm:
             print("shared secret keys are not identical")
             sys.exit()
     else:
         print(
-            f'''Shared secret keys s [Alice, Bob, Mallory]: 
-            {sa} == {sb} ? {sa == sb}\n'''
+            f"""Shared secret keys s [Alice, Bob, Mallory]:
+            {sa} == {sb} ? {sa == sb}\n"""
         )
-        if (sa != sb):
+        if sa != sb:
             print("shared secret keys are not identical")
             sys.exit()
- 
-
-    
-    
 
     # symmetric key, k = SHA 256(s)
     # ka = key alice; kb = key bob
@@ -107,8 +101,8 @@ def main():
 
     if TASK_1:
         print(
-            f'''Computed symmetric keys k [Alice, Bob, Mallory]: 
-            {trunc_ka} == {trunc_kb} == {trunc_km} ? {trunc_ka == trunc_kb == trunc_km}'''
+            f"""Computed symmetric keys k [Alice, Bob, Mallory]:
+            {trunc_ka} == {trunc_kb} == {trunc_km} ? {trunc_ka == trunc_kb == trunc_km}"""
         )
         # check if the symmetric keys are the same
         if trunc_ka != trunc_kb != trunc_km:
@@ -116,20 +110,16 @@ def main():
             sys.exit()
     else:
         print(
-            f'''Computed symmetric keys k [Alice, Bob, Mallory]: 
-            {trunc_ka} == {trunc_kb} ? {trunc_ka == trunc_kb}'''
+            f"""Computed symmetric keys k [Alice, Bob, Mallory]:
+            {trunc_ka} == {trunc_kb} ? {trunc_ka == trunc_kb}"""
         )
         # check if the symmetric keys are the same
         if trunc_ka != trunc_kb:
             print("symmetic keys are not the same")
             sys.exit()
 
-
-    
-
     # if they are the same, then update CALCULATED_KEY
     CALCULATED_KEY = trunc_ka
-
 
     # attempt to send messages to each other
     message_from_alice = b"Hello Bob"
@@ -165,8 +155,9 @@ def main():
         )
 
         cipher_decrypt_mallory_from_alice = AES.new(trunc_km, AES.MODE_CBC, GLOBAL_IV)
-        plaintext_intercepted_by_mallory_from_alice= unpad(
-            cipher_decrypt_mallory_from_alice.decrypt(ciphertext_from_alice), AES.block_size
+        plaintext_intercepted_by_mallory_from_alice = unpad(
+            cipher_decrypt_mallory_from_alice.decrypt(ciphertext_from_alice),
+            AES.block_size,
         )
     ###################################
 
@@ -185,31 +176,24 @@ def main():
     ###### MALLORY ####################
     if TASK_1:
         print(
-        f'''
+            f"""
     Mallory intercepted Alice's message: {plaintext_intercepted_by_mallory_from_alice}
         Verify that message Alice sent is the same as the intercepted one [Alice, Mallory]: {message_from_alice} == {plaintext_intercepted_by_mallory_from_alice} ? {message_from_alice == plaintext_intercepted_by_mallory_from_alice}
 
     Mallory intercepted Bob's message: {plaintext_intercepted_by_mallory_from_bob}
         Verify that message Bob sent is the same as the intercepted one [Bob, Mallory]: {message_from_bob} == {plaintext_intercepted_by_mallory_from_bob} ? {message_from_bob == plaintext_intercepted_by_mallory_from_bob}
 
-        '''
+        """
         )
     ###################################
 
-
-
-
-
     ###### TASK 2 #####################
-    # Repeat this attack, but instead of tampering with YA and YB, tamper with the 
+    # Repeat this attack, but instead of tampering with YA and YB, tamper with the
     # generator GLOBAL_BASE_G. Show that Mallory can recover Alice and Bob's messages
     # from their ciphertexts by setting GLOBAL_BASE_G to 1, q, or q-1.
 
-    
-
-
-
     pass
+
 
 if __name__ == "__main__":
     main()

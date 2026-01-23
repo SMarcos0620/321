@@ -11,8 +11,14 @@ from globals import GLOBAL_IV, GLOBAL_MOD_Q, GLOBAL_BASE_α
 
 TASK_1 = True
 
+_ = GLOBAL_MOD_Q  # make ruff happy here
+_ = GLOBAL_BASE_α
+
 
 def main():
+    global GLOBAL_BASE_α
+    global GLOBAL_MOD_Q
+
     # p = q
     GLOBAL_MOD_Q = 7
     # g = a

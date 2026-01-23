@@ -181,13 +181,13 @@ def main():
     if TASK_1:
         print(
             f"""
-    Mallory intercepted Alice's message: {plaintext_intercepted_by_mallory_from_alice}
-        Verify that message Alice sent is the same as the intercepted one [Alice, Mallory]: {message_from_alice} == {plaintext_intercepted_by_mallory_from_alice} ? {message_from_alice == plaintext_intercepted_by_mallory_from_alice}
+Mallory intercepted Alice's message: {plaintext_intercepted_by_mallory_from_alice}
+    Verify that message Alice sent is the same as the intercepted one [Alice, Mallory]: {message_from_alice} == {plaintext_intercepted_by_mallory_from_alice} ? {message_from_alice == plaintext_intercepted_by_mallory_from_alice}
 
-    Mallory intercepted Bob's message: {plaintext_intercepted_by_mallory_from_bob}
-        Verify that message Bob sent is the same as the intercepted one [Bob, Mallory]: {message_from_bob} == {plaintext_intercepted_by_mallory_from_bob} ? {message_from_bob == plaintext_intercepted_by_mallory_from_bob}
+Mallory intercepted Bob's message: {plaintext_intercepted_by_mallory_from_bob}
+    Verify that message Bob sent is the same as the intercepted one [Bob, Mallory]: {message_from_bob} == {plaintext_intercepted_by_mallory_from_bob} ? {message_from_bob == plaintext_intercepted_by_mallory_from_bob}
 
-        """
+    """
         )
     ###################################
 

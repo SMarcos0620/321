@@ -51,7 +51,7 @@ def main():
     secret_key_bob = get_secret_key(bob_b.to_bytes(), A, GLOBAL_MOD_P)
     sb = int.from_bytes(secret_key_bob)
     # Alice and bob now share a secret number s
-    print("Shared secret key s: ", end="")
+    print("Shared secret key s [Alice, Bob]: ", end="")
     print(f"{sa} == {sb} ? {sa == sb}")
 
     # symmetric key, k = SHA 256(s)
@@ -70,7 +70,7 @@ def main():
     trunc_kb = bytearray(kb_bytes)[:16]
 
     print(
-        f"Computed symmetric keys k: {trunc_ka} == {trunc_kb} ? {trunc_ka == trunc_kb}"
+        f"Computed symmetric keys k [Alice, Bob]: {trunc_ka} == {trunc_kb} ? {trunc_ka == trunc_kb}"
     )
 
     # check if the symmetric keys are the same
@@ -110,11 +110,11 @@ def main():
         f"\nAlice sent: {message_from_alice}\nAlice recieved: {plaintext_recieved_by_alice}"
     )
     print(
-        f"Verify message sent by Bob to Alice: {message_from_bob} == {plaintext_recieved_by_alice} ? {message_from_bob == plaintext_recieved_by_alice}"
+        f"  Verify message sent by Bob to Alice [Alice, Bob]: {message_from_bob} == {plaintext_recieved_by_alice} ? {message_from_bob == plaintext_recieved_by_alice}"
     )
     print(f"\nBob sent: {message_from_bob}\nBob recieved: {plaintext_recieved_by_bob}")
     print(
-        f"Verify message sent by Alice to Bob: {message_from_alice} == {plaintext_recieved_by_bob} ? {message_from_alice == plaintext_recieved_by_bob}"
+        f"  Verify message sent by Alice to Bob [Alice, Bob]: {message_from_alice} == {plaintext_recieved_by_bob} ? {message_from_alice == plaintext_recieved_by_bob}"
     )
 
     pass

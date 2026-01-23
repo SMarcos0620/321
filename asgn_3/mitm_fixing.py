@@ -13,12 +13,12 @@ TASK_1 = True
 
 def main():
     #p = q
-    GLOBAL_MOD_P = 7
+    GLOBAL_MOD_Q = 7
     #g = a
     #GLOBAL_BASE_G = 7 * 3 * 7
     #GLOBAL_BASE_G = 1
     #GLOBAL_BASE_G = GLOBAL_MOD_P
-    GLOBAL_BASE_G = GLOBAL_MOD_P - 1
+    GLOBAL_BASE_α = GLOBAL_MOD_Q - 1
     # ^^ This speeds up runtime a lot.
 
     # alice chooses secret int a
@@ -26,8 +26,8 @@ def main():
     # bob chooses secret int b
     bob_b = 3
 
-    A = get_public_key(alice_a.to_bytes(), GLOBAL_BASE_G, GLOBAL_MOD_P)
-    B = get_public_key(bob_b.to_bytes(), GLOBAL_BASE_G, GLOBAL_MOD_P)
+    A = get_public_key(alice_a.to_bytes(), GLOBAL_BASE_α, GLOBAL_MOD_Q)
+    B = get_public_key(bob_b.to_bytes(), GLOBAL_BASE_α, GLOBAL_MOD_Q)
 
     # print(int.from_bytes(A))
     # print(int.from_bytes(B))
@@ -35,18 +35,18 @@ def main():
     ###### MALLORY ####################
     # let M be Mallory's prime
     if (TASK_1):
-        A = B = M = GLOBAL_MOD_P.to_bytes(
-            (GLOBAL_MOD_P.bit_length() + 7) // 8
+        A = B = M = GLOBAL_MOD_Q.to_bytes(
+            (GLOBAL_MOD_Q.bit_length() + 7) // 8
         )  
     # send q to both Bob and Alice
     # essentially makes the secret key computation: q mod q = 0
     ###################################
 
     # Alice computes s = Ba mod p
-    secret_key_alice = get_secret_key(alice_a.to_bytes(), B, GLOBAL_MOD_P)
+    secret_key_alice = get_secret_key(alice_a.to_bytes(), B, GLOBAL_MOD_Q)
     sa = int.from_bytes(secret_key_alice)
     # bob computes s = Aa mod p
-    secret_key_bob = get_secret_key(bob_b.to_bytes(), A, GLOBAL_MOD_P)
+    secret_key_bob = get_secret_key(bob_b.to_bytes(), A, GLOBAL_MOD_Q)
     sb = int.from_bytes(secret_key_bob)
     # Alice and bob now share a secret number s
     
@@ -56,7 +56,7 @@ def main():
     #Mallory's secret int
     if TASK_1:
         mallory_m = 5
-        secret_key_mallory = get_secret_key(mallory_m.to_bytes(), M, GLOBAL_MOD_P)
+        secret_key_mallory = get_secret_key(mallory_m.to_bytes(), M, GLOBAL_MOD_Q)
         sm = int.from_bytes(secret_key_mallory)
     ###################################
 

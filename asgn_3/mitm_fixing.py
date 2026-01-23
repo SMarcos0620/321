@@ -11,7 +11,9 @@ from globals import GLOBAL_BASE_G, GLOBAL_IV, GLOBAL_MOD_P
 
 
 def main():
+    #p = q
     GLOBAL_MOD_P = 7
+    #g = a
     GLOBAL_BASE_G = 7 * 3 * 7
     # ^^ This speeds up runtime a lot.
 
@@ -27,9 +29,9 @@ def main():
     # print(int.from_bytes(B))
 
     ###### MALLORY ####################
-    # let M be Mallory's base
-    A = B = M = GLOBAL_BASE_G.to_bytes(
-        (GLOBAL_BASE_G.bit_length() + 7) // 8
+    # let M be Mallory's prime
+    A = B = M = GLOBAL_MOD_P.to_bytes(
+        (GLOBAL_MOD_P.bit_length() + 7) // 8
     )  # send q to both Bob and Alice
        # essentially makes the secret key computation: q mod q = 0
     ###################################

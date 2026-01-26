@@ -3,6 +3,7 @@ from Crypto.Cipher import AES
 from Crypto.Hash import SHA256
 from Crypto.Util.Padding import pad, unpad
 from globals import GLOBAL_IV, GLOBAL_MOD_Q, GLOBAL_BASE_α
+import math, random
 """
 Task 3: Implement “textbook” RSA & MITM Key Fixing via Malleability:
 1). RSA has two core components: key generation and encryption/decryption. (90%
@@ -120,6 +121,7 @@ def RSA_decrypt(ciphertext: bytes, d: int, n: int) -> bytes:
     return M_decrypted.to_bytes((M_decrypted.bit_length() + 7) // 8, byteorder='big')
 
 
+
 def main():
     # Given values
 
@@ -138,10 +140,12 @@ def main():
     ###################
 
     ##### PART 2 #####
-    alice_n = 10
+    alice_p = Crypto.Math.Primality.generate_probable_prime(exact_bits=2048)
+    alice_q = Crypto.Math.Primality.generate_probable_prime(exact_bits=2048)
+    alice_n = alice_p * alice_q
     #Note: GLOBAL_E = 65537
 
-    bob_s = 10
+    bob_s = random.randrange(2, alice_n)
     bob_c = mod_pow(bob_s, GLOBAL_E, alice_n)
 
     # Find a value for c’ that Mallory will substitute for the ciphertext c that will allow 
@@ -149,18 +153,19 @@ def main():
     # public key (n,e) and can send a value of c’ to Alice that will allow Mallory to know 
     # the value of s without knowing Alice’s private key.
 
-    # Mallory's attack: c' =  (ct)^e mod n
+    # Mallory's attack: c' =  c * t^e mod n
     mallory_t = 20
-    mallory_c_prime = mod_pow(bob_c * mallory_t, GLOBAL_E, alice_n)
+    mallory_c_prime = (int(bob_c) * int(mod_pow(mallory_t, GLOBAL_E, alice_n))) % int(alice_n)
 
     # Mallory sends c' to Alice
-    alice_phi = (p - 1) * (q - 1)
+    # https://en.wikipedia.org/wiki/Malleability_%28cryptography%29 
+
+    alice_phi = (alice_p - 1) * (alice_q - 1)
     alice_d = mod_inverse(GLOBAL_E, alice_phi)
     alice_s = mod_pow(mallory_c_prime, alice_d, alice_n)
 
-    mallory_phi = (p - 1) * (q - 1)
-    mallory_d = mod_inverse(GLOBAL_E, mallory_phi)
-    mallory_s = mod_pow(mallory_c_prime, mallory_d, alice_n)
+    mallory_s = int(bob_s * mallory_t) % int(alice_n)
+    #mallory_s = mod_pow(mallory_c_prime, mallory_d, alice_n)
 
     print(
         f" Verify same s values from Alice and Mallory [Alice, Mallory]: {alice_s} == {mallory_s} ? {alice_s == mallory_s}"
@@ -168,13 +173,13 @@ def main():
 
     #k = SHA256(s)
     alice_k = SHA256.new()
-    alice_k.update(alice_s.to_bytes((alice_s.bit_length() + 7) // 8, byteorder='big'))
+    alice_k.update(alice_s.to_bytes((int(alice_n).bit_length() + 7) // 8, byteorder='big'))
     alice_k_bytes = alice_k.digest()
     trunc_alice_k = bytearray(alice_k_bytes)[:16]
 
     # Mallory knows alice's s value
     mallory_k = SHA256.new()
-    mallory_k.update(mallory_s.to_bytes((alice_s.bit_length() + 7) // 8, byteorder='big'))
+    mallory_k.update(mallory_s.to_bytes((int(alice_n).bit_length() + 7) // 8, byteorder='big'))
     mallory_k_bytes = mallory_k.digest()
     trunc_mallory_k = bytearray(mallory_k_bytes)[:16]
     # Alice attempts to send a message to Bob
@@ -186,6 +191,9 @@ def main():
         pad(message_from_alice, AES.block_size)
     )
 
+    print("keys equal:", trunc_alice_k == trunc_mallory_k)
+    print("iv length:", len(GLOBAL_IV))
+
     cipher_decrypt_mallory_from_alice = AES.new(trunc_mallory_k, AES.MODE_CBC, GLOBAL_IV)
     plaintext_intercepted_by_mallory_from_alice = unpad(
         cipher_decrypt_mallory_from_alice.decrypt(ciphertext_from_alice),
@@ -196,6 +204,24 @@ def main():
         f"""
 Mallory intercepted Alice's message: {plaintext_intercepted_by_mallory_from_alice}
     Verify that message Alice sent is the same as the intercepted one [Alice, Mallory]: {message_from_alice} == {plaintext_intercepted_by_mallory_from_alice} ? {message_from_alice == plaintext_intercepted_by_mallory_from_alice}""")
+
+    ##### SIGNATURES #####
+    # sign(m,d) = m^d mod n
+    message_from_alice = b"Hello Bob"
+    message_from_bob = b"Hello Alice"
+
+    bob_p = Crypto.Math.Primality.generate_probable_prime(exact_bits=2048)
+    bob_q = Crypto.Math.Primality.generate_probable_prime(exact_bits=2048)
+    bob_n = bob_p * bob_q
+    bob_phi = (bob_p - 1) * (bob_q - 1)
+    bob_d = mod_inverse(GLOBAL_E, bob_phi)
+
+    sign_m1 = mod_pow(message_from_alice, alice_d, alice_n)
+    sign_m2 = mod_pow(message_from_bob, bob_d, bob_n)
+    
+    print(f"Message signature for m1: {sign_m1}")
+    print(f"Message signature for m2: {sign_m2}")
+    
 
 if __name__ == "__main__":
     main()

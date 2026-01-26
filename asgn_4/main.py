@@ -1,3 +1,7 @@
+import secrets
+import string
+import time
+from ast import Return
 from random import randbytes
 
 from Crypto.Cipher import AES
@@ -82,7 +86,7 @@ FOR bits from 8 to 50, step 2:
 Find collision for 'bits' number of bits
 IF collision found:
 Add result to table
-Append bits, time, and inputs to respective lists
+Append ˝, time, and inputs to respective lists
 ELSE:
 Print timeout message
 Print results table
@@ -101,6 +105,27 @@ def hamming_dist(str1: str, str2: str) -> int:
         if c1 != c2:
             count += 1
     return count
+
+
+def find_collision(bits, max_att):
+    seen = dict()
+    t0 = time.monotonic()
+    for attempt in range(1, max_att):
+        # Pick random ascii string
+        s = ""
+        for _ in range(10):
+            c = secrets.choice(string.ascii_letters.join(string.ascii_uppercase))
+            s.join(c)
+
+        h = SHA256.new()
+        h.update(s.encode())
+        hash = h.digest()
+        if hash in seen:
+            return seen[h], s, attempt, t1 - t0
+        else:
+            t1 = time.monotonic()
+            seen[h] = s
+            return None, None, max_att, t1 - t0
 
 
 def main():
@@ -150,6 +175,11 @@ Hash: {h.digest()}
 
     # TASK c:
     print("Task 1c:")
+    bits = []
+    time = []
+    inputs = []
+    for i in range(8, 50, 2):
+        find_collision(i, 2000)
 
 
 if __name__ == "__main__":

@@ -1,5 +1,8 @@
 import Crypto.Math.Primality
-
+from Crypto.Cipher import AES
+from Crypto.Hash import SHA256
+from Crypto.Util.Padding import pad, unpad
+from globals import GLOBAL_IV, GLOBAL_MOD_Q, GLOBAL_BASE_α
 """
 Task 3: Implement “textbook” RSA & MITM Key Fixing via Malleability:
 1). RSA has two core components: key generation and encryption/decryption. (90%
@@ -114,20 +117,85 @@ def RSA_encrypt(prime1, prime2, m: bytes) -> tuple[bytes, int, int]:
 
 def RSA_decrypt(ciphertext: bytes, d: int, n: int) -> bytes:
     M_decrypted = mod_pow(int.from_bytes(ciphertext, byteorder='big'), d, n)
-    return M_decrypted.to_bytes()
+    return M_decrypted.to_bytes((M_decrypted.bit_length() + 7) // 8, byteorder='big')
 
 
 def main():
     # Given values
 
+    ##### Part 1 #####
+    
+
+    #Your implmentation should support variable length primes up to 2048 bits
     p = Crypto.Math.Primality.generate_probable_prime(exact_bits=2048)
     q = Crypto.Math.Primality.generate_probable_prime(exact_bits=2048)
-    message = 12
-    CT, d, n = RSA_encrypt(p, q, message.to_bytes())
+    message = b"hello"
+    CT, d, n = RSA_encrypt(p, q, message)
     print(CT)
     PT = RSA_decrypt(CT, d, n)
     print(PT)
 
+    ###################
+
+    ##### PART 2 #####
+    alice_n = 10
+    #Note: GLOBAL_E = 65537
+
+    bob_s = 10
+    bob_c = mod_pow(bob_s, GLOBAL_E, alice_n)
+
+    # Find a value for c’ that Mallory will substitute for the ciphertext c that will allow 
+    # Mallory to decrypt the ciphertext c0 and recover m. Hint: Mallory knows Alice’s
+    # public key (n,e) and can send a value of c’ to Alice that will allow Mallory to know 
+    # the value of s without knowing Alice’s private key.
+
+    # Mallory's attack: c' =  (ct)^e mod n
+    mallory_t = 20
+    mallory_c_prime = mod_pow(bob_c * mallory_t, GLOBAL_E, alice_n)
+
+    # Mallory sends c' to Alice
+    alice_phi = (p - 1) * (q - 1)
+    alice_d = mod_inverse(GLOBAL_E, alice_phi)
+    alice_s = mod_pow(mallory_c_prime, alice_d, alice_n)
+
+    mallory_phi = (p - 1) * (q - 1)
+    mallory_d = mod_inverse(GLOBAL_E, mallory_phi)
+    mallory_s = mod_pow(mallory_c_prime, mallory_d, alice_n)
+
+    print(
+        f" Verify same s values from Alice and Mallory [Alice, Mallory]: {alice_s} == {mallory_s} ? {alice_s == mallory_s}"
+    )
+
+    #k = SHA256(s)
+    alice_k = SHA256.new()
+    alice_k.update(alice_s.to_bytes((alice_s.bit_length() + 7) // 8, byteorder='big'))
+    alice_k_bytes = alice_k.digest()
+    trunc_alice_k = bytearray(alice_k_bytes)[:16]
+
+    # Mallory knows alice's s value
+    mallory_k = SHA256.new()
+    mallory_k.update(mallory_s.to_bytes((alice_s.bit_length() + 7) // 8, byteorder='big'))
+    mallory_k_bytes = mallory_k.digest()
+    trunc_mallory_k = bytearray(mallory_k_bytes)[:16]
+    # Alice attempts to send a message to Bob
+    message_from_alice = b"Hello Bob"
+
+    # encrypt
+    cipher_encrypt_alice = AES.new(trunc_alice_k, AES.MODE_CBC, GLOBAL_IV)
+    ciphertext_from_alice = cipher_encrypt_alice.encrypt(
+        pad(message_from_alice, AES.block_size)
+    )
+
+    cipher_decrypt_mallory_from_alice = AES.new(trunc_mallory_k, AES.MODE_CBC, GLOBAL_IV)
+    plaintext_intercepted_by_mallory_from_alice = unpad(
+        cipher_decrypt_mallory_from_alice.decrypt(ciphertext_from_alice),
+        AES.block_size,
+    )
+
+    print(
+        f"""
+Mallory intercepted Alice's message: {plaintext_intercepted_by_mallory_from_alice}
+    Verify that message Alice sent is the same as the intercepted one [Alice, Mallory]: {message_from_alice} == {plaintext_intercepted_by_mallory_from_alice} ? {message_from_alice == plaintext_intercepted_by_mallory_from_alice}""")
 
 if __name__ == "__main__":
     main()

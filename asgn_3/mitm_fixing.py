@@ -7,7 +7,8 @@ from Crypto.Util.Padding import pad, unpad
 from diffie_hellman import get_public_key, get_secret_key
 from globals import GLOBAL_IV, GLOBAL_MOD_Q, GLOBAL_BASE_α
 
-TASK_1 = True
+TASK_1 = False
+TASK_2 = True
 
 _ = GLOBAL_MOD_Q  # make ruff happy here
 _ = GLOBAL_BASE_α
@@ -18,13 +19,24 @@ def main():
     global GLOBAL_MOD_Q
 
     # p = q
-    GLOBAL_MOD_Q = 7
+    GLOBAL_MOD_Q = 111
     # g = a
     # GLOBAL_BASE_G = 7 * 3 * 7
     # GLOBAL_BASE_G = 1
     # GLOBAL_BASE_G = GLOBAL_MOD_P
-    GLOBAL_BASE_α = GLOBAL_MOD_Q - 1
+    GLOBAL_BASE_α = 5
     # ^^ This speeds up runtime a lot.
+
+    # Mallory is going to swap certain values around here.
+    # This forces sa and sb to be either 0 or 1, which Mallory
+    # deftly predicts.
+    if TASK_2:
+        # sa = sb = 1
+        # GLOBAL_BASE_α = 1
+        GLOBAL_BASE_α = GLOBAL_MOD_Q - 1
+
+        # sa = sb = 0
+        # GLOBAL_BASE_α = GLOBAL_MOD_Q
 
     # alice chooses secret int a
     alice_a = 4
@@ -38,7 +50,7 @@ def main():
     # print(int.from_bytes(B))
 
     ###### MALLORY ####################
-    # let M be Mallory's prime
+    # let M be Q, as in: Mallory enfoces Q when intercepting
     if TASK_1:
         A = B = M = GLOBAL_MOD_Q.to_bytes((GLOBAL_MOD_Q.bit_length() + 7) // 8)
     # send q to both Bob and Alice
@@ -74,7 +86,7 @@ def main():
     else:
         print(
             f"""Shared secret keys s [Alice, Bob, Mallory]:
-            {sa} == {sb} ? {sa == sb}\n"""
+{sa} == {sb} ? {sa == sb}"""
         )
         if sa != sb:
             print("shared secret keys are not identical")
@@ -106,7 +118,7 @@ def main():
     if TASK_1:
         print(
             f"""Computed symmetric keys k [Alice, Bob, Mallory]:
-            {trunc_ka} == {trunc_kb} == {trunc_km} ? {trunc_ka == trunc_kb == trunc_km}"""
+{trunc_ka} == {trunc_kb} == {trunc_km} ? {trunc_ka == trunc_kb == trunc_km}"""
         )
         # check if the symmetric keys are the same
         if trunc_ka != trunc_kb != trunc_km:
@@ -115,36 +127,33 @@ def main():
     else:
         print(
             f"""Computed symmetric keys k [Alice, Bob, Mallory]:
-            {trunc_ka} == {trunc_kb} ? {trunc_ka == trunc_kb}"""
+ka == kb ? {trunc_ka == trunc_kb}"""
         )
         # check if the symmetric keys are the same
         if trunc_ka != trunc_kb:
             print("symmetic keys are not the same")
             sys.exit()
 
-    # if they are the same, then update CALCULATED_KEY
-    CALCULATED_KEY = trunc_ka
-
     # attempt to send messages to each other
     message_from_alice = b"Hello Bob"
     message_from_bob = b"Hello Alice"
 
     # encrypt
-    cipher_encrypt_alice = AES.new(CALCULATED_KEY, AES.MODE_CBC, GLOBAL_IV)
+    cipher_encrypt_alice = AES.new(trunc_ka, AES.MODE_CBC, GLOBAL_IV)
     ciphertext_from_alice = cipher_encrypt_alice.encrypt(
         pad(message_from_alice, AES.block_size)
     )
-    cipher_encrypt_bob = AES.new(CALCULATED_KEY, AES.MODE_CBC, GLOBAL_IV)
+    cipher_encrypt_bob = AES.new(trunc_kb, AES.MODE_CBC, GLOBAL_IV)
     ciphertext_from_bob = cipher_encrypt_bob.encrypt(
         pad(message_from_bob, AES.block_size)
     )
 
     # decrypt
-    cipher_decrypt_alice = AES.new(CALCULATED_KEY, AES.MODE_CBC, GLOBAL_IV)
+    cipher_decrypt_alice = AES.new(trunc_ka, AES.MODE_CBC, GLOBAL_IV)
     plaintext_recieved_by_alice = unpad(
         cipher_decrypt_alice.decrypt(ciphertext_from_bob), AES.block_size
     )
-    cipher_decrypt_bob = AES.new(CALCULATED_KEY, AES.MODE_CBC, GLOBAL_IV)
+    cipher_decrypt_bob = AES.new(trunc_kb, AES.MODE_CBC, GLOBAL_IV)
     plaintext_recieved_by_bob = unpad(
         cipher_decrypt_bob.decrypt(ciphertext_from_alice), AES.block_size
     )
@@ -193,10 +202,37 @@ Mallory intercepted Bob's message: {plaintext_intercepted_by_mallory_from_bob}
 
     ###### TASK 2 #####################
     # Repeat this attack, but instead of tampering with YA and YB, tamper with the
-    # generator GLOBAL_BASE_G. Show that Mallory can recover Alice and Bob's messages
-    # from their ciphertexts by setting GLOBAL_BASE_G to 1, q, or q-1.
+    # generator GLOBAL_BASE_α. Show that Mallory can recover Alice and Bob's messages
+    # from their ciphertexts by setting GLOBAL_BASE_α to 1, q, or q-1.
+    #
+    #
+    #
+    if TASK_2:
+        if GLOBAL_BASE_α == GLOBAL_MOD_Q:
+            secret = 0
+        else:
+            secret = 1
+        km = SHA256.new()
+        km.update(secret.to_bytes())
+        km_bytes = km.digest()
+        trunc_km = bytearray(km_bytes)[:16]
 
-    pass
+        cipher_decrypt_mallory_from_bob = AES.new(trunc_km, AES.MODE_CBC, GLOBAL_IV)
+        plaintext_intercepted_by_mallory_from_bob = unpad(
+            cipher_decrypt_mallory_from_bob.decrypt(ciphertext_from_bob), AES.block_size
+        )
+
+        cipher_decrypt_mallory_from_alice = AES.new(trunc_km, AES.MODE_CBC, GLOBAL_IV)
+        plaintext_intercepted_by_mallory_from_alice = unpad(
+            cipher_decrypt_mallory_from_alice.decrypt(ciphertext_from_alice),
+            AES.block_size,
+        )
+
+        print(f"""
+Mallory recieved:
+To Alice: {plaintext_intercepted_by_mallory_from_alice}
+To Bob: {plaintext_intercepted_by_mallory_from_bob}
+            """)
 
 
 if __name__ == "__main__":

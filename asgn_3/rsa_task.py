@@ -207,21 +207,25 @@ Mallory intercepted Alice's message: {plaintext_intercepted_by_mallory_from_alic
 
     ##### SIGNATURES #####
     # sign(m,d) = m^d mod n
-    message_from_alice = b"Hello Bob"
-    message_from_bob = b"Hello Alice"
+    message_from_alice = int.from_bytes(b"Hello Bob", byteorder='big')
+    message_from_bob = int.from_bytes(b"Hello Alice", byteorder='big')
 
-    bob_p = Crypto.Math.Primality.generate_probable_prime(exact_bits=2048)
-    bob_q = Crypto.Math.Primality.generate_probable_prime(exact_bits=2048)
-    bob_n = bob_p * bob_q
-    bob_phi = (bob_p - 1) * (bob_q - 1)
-    bob_d = mod_inverse(GLOBAL_E, bob_phi)
-
+    # d and n are public
     sign_m1 = mod_pow(message_from_alice, alice_d, alice_n)
-    sign_m2 = mod_pow(message_from_bob, bob_d, bob_n)
+    sign_m2 = mod_pow(message_from_bob, alice_d, alice_n)
     
+    # https://cryptobook.nakov.com/digital-signatures/rsa-signatures 
     print(f"Message signature for m1: {sign_m1}")
     print(f"Message signature for m2: {sign_m2}")
-    
 
+    print(f"Verify m1: {mod_pow(sign_m1, GLOBAL_E, alice_n) == message_from_alice}")
+    print(f"Verify m2: {mod_pow(sign_m2, GLOBAL_E, alice_n) == message_from_bob}")
+
+    # Mallory can see the signatures/messages for m1 and m2
+    # given that m3 = m1 * m2, do (m3) mod n = (m1 * m2) mod n
+
+    mallory_message = (message_from_alice * message_from_bob) % int(alice_n)
+    sign_m3 = (sign_m1 * sign_m2) % int(alice_n)
+    print(f"Verify m3: {mod_pow(sign_m3, GLOBAL_E, alice_n) == mallory_message}")
 if __name__ == "__main__":
     main()

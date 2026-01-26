@@ -54,12 +54,12 @@ The public key consists of the modulus n and the public exponent e. The private 
 def mod_pow(base: int, exponent: int, modulus: int) -> int:
     """Compute (base^exponent) % modulus efficiently"""
     result = 1
-    base = base % modulus
+    base = int(base) % int(modulus)
     while exponent > 0:
         if exponent % 2 == 1:
-            result = (result * base) % modulus
+            result = int(result * base) % int(modulus)
         exponent = exponent >> 1
-        base = (base * base) % modulus
+        base = int(base * base) % int(modulus)
     return result
 
 
@@ -70,14 +70,14 @@ def mod_inverse(a: int, m: int):
         if a == 0:
             return (b, 0, 1)
         else:
-            g, y, x = egcd(b % a, a)
-            return (g, x - (b // a) * y, y)
+            g, y, x = egcd(int(b) % int(a), a)
+            return (g, x - int(b // a) * y, y)
 
-    g, x, _ = egcd(a, m)
+    g, x, _ = egcd(int(a), int(m))
     if g != 1:
         raise Exception("Modular inverse does not exist")
     else:
-        return x % m
+        return int(x) % int(m)
 
 
 def RSA_encrypt(prime1, prime2, m: bytes) -> tuple[bytes, int, int]:
@@ -105,15 +105,15 @@ def RSA_encrypt(prime1, prime2, m: bytes) -> tuple[bytes, int, int]:
 
     # Encryption
     # m = 88  # plaintext
-    C = mod_pow(int(m), e, n)
+    C = mod_pow(int.from_bytes(m), e, n)
     # print(f"\nSelect plaintext M = {M}")
     # print(f"Ciphertext C = {M}^{e} mod {n} = {C}")
 
-    return C.to_bytes(), d, n
+    return C.to_bytes((C.bit_length() + 7) // 8, byteorder='big'), d, n
 
 
 def RSA_decrypt(ciphertext: bytes, d: int, n: int) -> bytes:
-    M_decrypted = mod_pow(int(ciphertext), d, n)
+    M_decrypted = mod_pow(int.from_bytes(ciphertext, byteorder='big'), d, n)
     return M_decrypted.to_bytes()
 
 

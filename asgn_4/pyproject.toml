@@ -6,6 +6,6 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "bcrypt>=5.0.0",
+    "nltk>=3.9.2",
     "pycryptodome>=3.23.0",
-    "textdistance>=4.6.3",
 ]

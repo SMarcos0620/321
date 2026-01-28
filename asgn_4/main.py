@@ -3,6 +3,7 @@ import string
 import time
 from ast import Return
 from random import randbytes
+import pprint
 
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA256
@@ -135,13 +136,16 @@ def main():
     # the resulting digests to the screen in hexadecimal format.
 
     # user_in = input("Enter input: ")
-    print("Task 1a:")
+    # store digests into one hash map
+    ham_hash = {}
+    print("##### Task 1a: #####")
 
     str1 = "Hello from asgn-4!"
     print(f"str1: {str1}")
     str1_k = SHA256.new()
     str1_k.update(str1.encode())
     str1_k_bytes = str1_k.digest()
+    ham_hash[str1] = str1_k_bytes
 
     print(f"    str1 digest: {str1_k_bytes}")
 
@@ -151,6 +155,7 @@ def main():
     str2_k = SHA256.new()
     str2_k.update(str2.encode())
     str2_k_bytes = str2_k.digest()
+    ham_hash[str2] = str2_k_bytes
 
     print(f"    str2 digest: {str2_k_bytes}")
 
@@ -162,19 +167,35 @@ def main():
     # https://www.geeksforgeeks.org/dsa/hamming-distance-two-strings/
     slist = ["abcdefghij", "abcdefghik"]
     print(
-        f"""\nTask 1b:\nhamming dist of 2 strings: {hamming_dist(slist[0], slist[1])}"""
+        f"""\n##### Task 1b: #####\nhamming dist of 2 strings: {hamming_dist(slist[0], slist[1])}"""
     )
     for s in slist:
         h = SHA256.new()
         h.update(s.encode())
+        h_hash = h.digest()
 
-        print(f"""
-String: {s}
-Hash: {h.digest()}
-""")
+        print(
+            f"""String: {s}\nHash: {h.digest()}""")
+        ham_hash[s] = h_hash
+
+    print("\n\nHAMMED AND HASHED VALUES:")
+    pprint.pprint(ham_hash)
+    
+    # Part C: Modify your program to compute SHA256 hashes of arbitrary inputs, so that it is 
+    # able to truncate the digests to between 8 and 50 bits
+    
+    trunc_bits = 8
+    for str, digest in ham_hash.items():
+        ham_hash[str] = digest [:trunc_bits]
+
+    
+
+    print("\n\nHAMMED, HASHED, AND TRUNCATED VALUES:")
+    pprint.pprint(ham_hash)
+
 
     # TASK c:
-    print("Task 1c:")
+    print("\n##### Task 1c: #####")
     bits = []
     time = []
     inputs = []

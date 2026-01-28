@@ -127,20 +127,23 @@ def find_collision(bits, max_att):
         # Calculate truncated hash 'h' of 's'
         h = SHA256.new()
         h.update(s.encode())
-        hash = h.digest()
-        print(f"string: {s}     hash: {hash}")
+        #truncate hash up to bits
+        hash = h.digest()[:(bits // 8)]
+        #print(f"string: {s}     hash: {hash}")
 
         # IF h exists in seen:
         if hash in seen:
             #calculate end time
             time_elapsed = t1 - t0
-            return True, seen[h], s, attempt, time_elapsed
+            print("LINE 137: Collision detected")
+            return True, seen[hash], s, attempt, time_elapsed
         # ELSE, add random string 's' to dict 'seen' with key hash 'h'
         else:
             #t1 = end time
             t1 = time.monotonic()
-            seen[h] = s
+            seen[hash] = s
             time_elapsed = t1 - t0
+        #print(f"seen: {seen}")
     return False, None, None, max_att, time_elapsed
 
 
@@ -216,14 +219,15 @@ def main():
     inputs = []
     # FOR bits from 8 to 50, step 2
     for i in range(8, 50, 2):
-       collision_tuple = find_collision(i, 9999)
+       collision_tuple = find_collision(i, 1000)
+       #print(f"Collision tuple: {collision_tuple}")
        # if collision found:
-       if collision_tuple[1] == True:
+       if collision_tuple[0] == True:
            print("collision detected")
        # else:
-       else:
-        print("Collision not detected. Timeout")
-        exit()
+       #else:
+        #print("Collision not detected. Timeout")
+        
 
 
 

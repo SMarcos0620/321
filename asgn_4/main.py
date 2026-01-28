@@ -135,7 +135,7 @@ def find_collision(bits, max_att):
         if hash in seen:
             #calculate end time
             time_elapsed = t1 - t0
-            print("LINE 137: Collision detected")
+            #print("LINE 137: Collision detected")
             return True, seen[hash], s, attempt, time_elapsed
         # ELSE, add random string 's' to dict 'seen' with key hash 'h'
         else:
@@ -217,16 +217,22 @@ def main():
     bits = []
     time = []
     inputs = []
+    max_attempts = 999999
     # FOR bits from 8 to 50, step 2
     for i in range(8, 50, 2):
-       collision_tuple = find_collision(i, 1000)
+       #collision_tuple: bool, seen, s, attempt, time
+        collision_tuple = find_collision(i, max_attempts)
        #print(f"Collision tuple: {collision_tuple}")
        # if collision found:
-       if collision_tuple[0] == True:
-           print("collision detected")
-       # else:
-       #else:
-        #print("Collision not detected. Timeout")
+        if collision_tuple[0] == True:
+           print(f"for {i}-bit hash, there was a collision detected: {collision_tuple}")
+           bits.append(i)
+           time.append(collision_tuple[4])
+           inputs.append(collision_tuple[1])
+        else:
+            print("Collision not detected. Timeout")
+            #ik this is not a timeout, but just a placeholder
+            exit()
         
 
 

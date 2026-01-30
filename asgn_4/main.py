@@ -1,13 +1,11 @@
+import pprint
 import secrets
 import string
+import sys
 import time
-from ast import Return
-from random import randbytes
-import pprint
 
-from Crypto.Cipher import AES
+import polars
 from Crypto.Hash import SHA256
-from Crypto.Util.Padding import pad, unpad
 
 """
 Pseudo Code:
@@ -108,10 +106,10 @@ def hamming_dist(str1: str, str2: str) -> int:
     return count
 
 
-def find_collision(bits, max_att):
+def find_collision(bits, max_att) -> tuple[bool, str, str, bytes, int, float]:
     # initialize empty dictionary "seen"
     seen = dict()
-    #record start time, t0
+    # record start time, t0
     t0 = time.monotonic()
     # FOR attempts from 1 to max_attempts
     for attempt in range(1, max_att):
@@ -121,30 +119,30 @@ def find_collision(bits, max_att):
         for _ in range(10):
             # c is a single ASCII char
             c = secrets.choice(string.ascii_letters.join(string.ascii_uppercase))
-            #concatenate the ASCII values together
+            # concatenate the ASCII values together
             s += c
-            
+
         # Calculate truncated hash 'h' of 's'
         h = SHA256.new()
         h.update(s.encode())
-        #truncate hash up to bits
-        hash = h.digest()[:(bits // 8)]
-        #print(f"string: {s}     hash: {hash}")
+        # truncate hash up to bits
+        hash = h.digest()[: (bits // 8)]
+        # print(f"string: {s}     hash: {hash}")
 
         # IF h exists in seen:
         if hash in seen:
-            #calculate end time
+            # calculate end time
             time_elapsed = t1 - t0
-            #print("LINE 137: Collision detected")
-            return True, seen[hash], s, attempt, time_elapsed
+            # print("LINE 137: Collision detected")
+            return True, seen[hash], s, hash, attempt, time_elapsed
         # ELSE, add random string 's' to dict 'seen' with key hash 'h'
         else:
-            #t1 = end time
+            # t1 = end time
             t1 = time.monotonic()
             seen[hash] = s
-            time_elapsed = t1 - t0
-        #print(f"seen: {seen}")
-    return False, None, None, max_att, time_elapsed
+        time_elapsed = t1 - t0
+        # print(f"seen: {seen}")
+    return False, None, None, None, max_att, time_elapsed
 
 
 def main():
@@ -192,50 +190,63 @@ def main():
         h.update(s.encode())
         h_hash = h.digest()
 
-        print(
-            f"""String: {s}\nHash: {h.digest()}""")
+        print(f"""String: {s}\nHash: {h.digest()}""")
         ham_hash[s] = h_hash
 
     print("\n\nHAMMED AND HASHED VALUES:")
     pprint.pprint(ham_hash)
-    
-    # Part C: Modify your program to compute SHA256 hashes of arbitrary inputs, so that it is 
+
+    # Part C: Modify your program to compute SHA256 hashes of arbitrary inputs, so that it is
     # able to truncate the digests to between 8 and 50 bits
-    
+
     trunc_bits = 8
     for str, digest in ham_hash.items():
-        ham_hash[str] = digest [:trunc_bits]
-
-    
+        ham_hash[str] = digest[:trunc_bits]
 
     print("\n\nHAMMED, HASHED, AND TRUNCATED VALUES:")
     pprint.pprint(ham_hash)
 
-
     # TASK c:
     print("\n##### Task 1c: #####")
-    bits = []
-    time = []
-    inputs = []
-    max_attempts = 999999
+
+    max_attempts = sys.maxsize
     # FOR bits from 8 to 50, step 2
-    for i in range(8, 50, 2):
-       #collision_tuple: bool, seen, s, attempt, time
-        collision_tuple = find_collision(i, max_attempts)
-       #print(f"Collision tuple: {collision_tuple}")
-       # if collision found:
-        if collision_tuple[0] == True:
-           print(f"for {i}-bit hash, there was a collision detected: {collision_tuple}")
-           bits.append(i)
-           time.append(collision_tuple[4])
-           inputs.append(collision_tuple[1])
+    df = polars.DataFrame()
+
+    for i in range(8, 52, 2):
+        # collision_tuple: bool, seen, s, attempt, time
+        found, s1, s2, hash, attempts, time_elapsed = find_collision(i, max_attempts)
+        # print(f"Collision tuple: {collision_tuple}")
+        # if collision found:
+        #
+
+        if found:
+            print(
+                f"for {i}-bit hash, there was a collision detected: {(s1, s2, hash, time_elapsed)}"
+            )
+
+            row = polars.DataFrame(
+                [
+                    {
+                        "Bit Size": i,
+                        "Input 1": s1,
+                        "Input 2": s2,
+                        "Hash": hash,
+                        "Tries": attempts,
+                        "Time (s)": time_elapsed,
+                    }
+                ]
+            )
+
+            df = df.vstack(row)
+
+            # print(df["Bit Size"])
+            # print(df)
         else:
             print("Collision not detected. Timeout")
-            #ik this is not a timeout, but just a placeholder
+            # ik this is not a timeout, but just a placeholder
             exit()
-        
-
-
+    print(df)
 
 
 if __name__ == "__main__":

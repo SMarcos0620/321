@@ -213,7 +213,7 @@ def main():
     # FOR bits from 8 to 50, step 2
     df = polars.DataFrame()
 
-    for i in range(8, 52, 2):
+    for i in range(8, 32, 2):
         # collision_tuple: bool, seen, s, attempt, time
         found, s1, s2, hash, attempts, time_elapsed = find_collision(i, max_attempts)
         # print(f"Collision tuple: {collision_tuple}")
@@ -231,7 +231,7 @@ def main():
                         "Bit Size": i,
                         "Input 1": s1,
                         "Input 2": s2,
-                        "Hash": hash,
+                        "Hash": hash.hex(),
                         "Tries": attempts,
                         "Time (s)": time_elapsed,
                     }
@@ -247,6 +247,8 @@ def main():
             # ik this is not a timeout, but just a placeholder
             exit()
     print(df)
+
+    df.write_csv("out.csv")
 
 
 if __name__ == "__main__":

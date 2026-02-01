@@ -268,12 +268,14 @@ def main():
     plt.xlabel("Digest Size (bits)")
     plt.ylabel("Collision Time")
     plt.title("Digest Size vs Collision Time")
+    plt.savefig("Digest_Size_vs_Collision_Time.jpg")
 
     plt.figure(2, figsize=(5, 5))
     plt.plot(bits, inputs)
     plt.xlabel("Digest Size (bits)")
     plt.ylabel("Number of Inputs")
     plt.title("Digest Size vs Number of Inputs")
+    plt.savefig("Digest_Size_vs_Number_of_Inputs.jpg")
 
     plt.show()
     

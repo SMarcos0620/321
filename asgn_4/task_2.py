@@ -30,15 +30,21 @@ def worker():
         try:
             w: str = q.get(timeout=0.5)
             hashed = bc.hashpw(w.encode(), salt.encode())
+
+            # print(f"{hashed.decode()} == {salt}{hash}")
             if hashed.decode() == f"{salt}{hash}":
                 result = w
                 found.set()
-                print(f"!!! PASSWORD FOUND : {w} !!!")
+                # print(f"[!] PASSWORD FOUND : {w} [!]")
         except Exception as e:
             print(f"Thread had error: {e}")
 
 
 def crack():
+    with open("save.txt", "r") as file:
+        lines = [line.rstrip() for line in file]
+        for line in lines:
+            q.put(line)
     for w in word_list:
         if len(w) in range(6, 11):
             q.put(w)
@@ -52,6 +58,8 @@ def crack():
 
     for t in threads:
         t.join()
+
+    found.clear()
 
 
 salt = None
@@ -71,7 +79,11 @@ with open("shadow.txt", "r") as file:
         print(f"[*] Algorithm: {algo}, Work factor: {workf}")
         print(f"[*] Testing {len(word_list)} words with {NUM_THREADS} threads...")
         crack()
+
         if result:
-            print(f"\n[+] SUCCESS! Password is: {result}")
+            print(f"\n[+] SUCCESS! Password is: {result}\n")
+            with open("save.txt", "a", encoding="utf-8") as f:
+                f.write(f"{result}\n")
+
         else:
             print("\n[-] Password not found in wordlist")

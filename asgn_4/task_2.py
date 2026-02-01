@@ -1,6 +1,4 @@
-import base64
 import threading
-import time
 from queue import Queue
 
 import bcrypt as bc

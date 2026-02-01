@@ -6,6 +6,7 @@ readme = "README.md"
 requires-python = ">=3.13"
 dependencies = [
     "bcrypt>=5.0.0",
+    "matplotlib>=3.10.8",
     "nltk>=3.9.2",
     "polars>=1.37.1",
     "pycryptodome>=3.23.0",

@@ -7,6 +7,9 @@ import time
 import polars
 from Crypto.Hash import SHA256
 
+import matplotlib.pyplot as plt
+import numpy as np
+
 """
 Pseudo Code:
 
@@ -213,7 +216,11 @@ def main():
     # FOR bits from 8 to 50, step 2
     df = polars.DataFrame()
 
-    for i in range(8, 52, 2):
+    bits = []
+    collision_time = []
+    inputs = []
+
+    for i in range(8, 32, 2):
         # collision_tuple: bool, seen, s, attempt, time
         found, s1, s2, hash, attempts, time_elapsed = find_collision(i, max_attempts)
         # print(f"Collision tuple: {collision_tuple}")
@@ -238,6 +245,10 @@ def main():
                 ]
             )
 
+            bits.append(i)
+            inputs.append(attempts)
+            collision_time.append(time_elapsed)
+
             df = df.vstack(row)
 
             # print(df["Bit Size"])
@@ -249,6 +260,24 @@ def main():
     print(df)
 
     df.write_csv("out.csv")
+    
+
+    #https://www.geeksforgeeks.org/python/matplotlib-pyplot-figure-in-python/
+    plt.figure(1, figsize=(5, 5))
+    plt.plot(bits, collision_time)
+    plt.xlabel("Digest Size (bits)")
+    plt.ylabel("Collision Time")
+    plt.title("Digest Size vs Collision Time")
+
+    plt.figure(2, figsize=(5, 5))
+    plt.plot(bits, inputs)
+    plt.xlabel("Digest Size (bits)")
+    plt.ylabel("Number of Inputs")
+    plt.title("Digest Size vs Number of Inputs")
+
+    plt.show()
+    
+
 
 
 if __name__ == "__main__":

@@ -213,7 +213,7 @@ def main():
     # FOR bits from 8 to 50, step 2
     df = polars.DataFrame()
 
-    for i in range(8, 32, 2):
+    for i in range(8, 52, 2):
         # collision_tuple: bool, seen, s, attempt, time
         found, s1, s2, hash, attempts, time_elapsed = find_collision(i, max_attempts)
         # print(f"Collision tuple: {collision_tuple}")

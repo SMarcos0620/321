@@ -3,3 +3,6 @@ wizard
 diamond
 desire
 ossify
+hangout
+drossy
+ispaghul

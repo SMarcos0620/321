@@ -220,7 +220,7 @@ def main():
     collision_time = []
     inputs = []
 
-    for i in range(8, 32, 2):
+    for i in range(8, 52, 2):
         # collision_tuple: bool, seen, s, attempt, time
         found, s1, s2, hash, attempts, time_elapsed = find_collision(i, max_attempts)
         # print(f"Collision tuple: {collision_tuple}")
@@ -257,21 +257,28 @@ def main():
             print("Collision not detected. Timeout")
             # ik this is not a timeout, but just a placeholder
             exit()
+
+    polars.Config.set_tbl_rows(25) 
     print(df)
 
     df.write_csv("out.csv")
     
 
     #https://www.geeksforgeeks.org/python/matplotlib-pyplot-figure-in-python/
-    plt.figure(1, figsize=(5, 5))
+    #https://stackoverflow.com/questions/20130227/how-to-connect-scatterplot-points-with-line-using-matplotlib
+    plt.figure(1, figsize=(10, 10))
     plt.plot(bits, collision_time)
+    plt.scatter(bits, collision_time)
+    plt.grid()
     plt.xlabel("Digest Size (bits)")
     plt.ylabel("Collision Time")
     plt.title("Digest Size vs Collision Time")
     plt.savefig("Digest_Size_vs_Collision_Time.jpg")
 
-    plt.figure(2, figsize=(5, 5))
+    plt.figure(2, figsize=(10, 10))
     plt.plot(bits, inputs)
+    plt.scatter(bits, inputs)
+    plt.grid()
     plt.xlabel("Digest Size (bits)")
     plt.ylabel("Number of Inputs")
     plt.title("Digest Size vs Number of Inputs")

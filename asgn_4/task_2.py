@@ -4,6 +4,7 @@ from queue import Queue
 import bcrypt as bc
 import nltk
 from nltk.corpus import words
+import time
 
 # Download words corpus if not already present
 try:
@@ -39,7 +40,7 @@ def worker():
 
 
 def crack():
-    with open("save.txt", "r") as file:
+    with open("save1.txt", "r") as file:
         lines = [line.rstrip() for line in file]
         for line in lines:
             q.put(line)
@@ -66,6 +67,7 @@ NUM_THREADS = 10
 with open("shadow.txt", "r") as file:
     lines = [line.rstrip() for line in file]
     for line in lines:
+        t0 = time.monotonic()
         values = line.split("$")
         user, algo, workf, salted_hash = values
         partial_salt = salted_hash[:22]
@@ -79,9 +81,14 @@ with open("shadow.txt", "r") as file:
         crack()
 
         if result:
+            t1 = time.monotonic()
+            time_elapsed = t1 - t0
             print(f"\n[+] SUCCESS! Password is: {result}\n")
-            with open("save.txt", "a", encoding="utf-8") as f:
-                f.write(f"{result}\n")
+            with open("save1.txt", "a", encoding="utf-8") as f:
+                f.write(f"{result} {time_elapsed}\n")
 
         else:
+            t0 = 0
+            t1 = 0
+            time_elapsed = 0
             print("\n[-] Password not found in wordlist")

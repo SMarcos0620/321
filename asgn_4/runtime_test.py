@@ -7,12 +7,24 @@ password = b"aaaaaa"
 
 individual_cost: list[tuple[int, timedelta]] = []
 
+salts = []
+workfs = []
+with open("shadow.txt", "r") as file:
+    lines = [line.rstrip() for line in file]
+    for line in lines:
+        values = line.split("$")
+        user, algo, workf, salted_hash = values
+        partial_salt = salted_hash[:22]
+        hash = salted_hash[22:]
 
-for cost in range(8, 14):
-    salt = bcrypt.gensalt(rounds=cost)
+        salt = f"${algo}${workf}${partial_salt}"
+        workfs.append(int(workf))
+        salts.append(salt)
 
+
+for cost, salt in zip(workfs, salts):
     t0 = time.perf_counter()
-    _ = bcrypt.hashpw(password, salt)
+    _ = bcrypt.hashpw(password, salt.encode())
     dt = time.perf_counter() - t0
 
     individual_cost.append((cost, timedelta(milliseconds=dt)))

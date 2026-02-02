@@ -45,7 +45,7 @@ def crack():
         for line in lines:
             q.put(line)
     for w in word_list:
-        if len(w) in range(6, 11):
+        if len(w) > 6 and len(w) < 11:
             q.put(w)
 
     threads: list[threading.Thread] = []
@@ -79,7 +79,7 @@ with open("shadow.txt", "r") as file:
         print(f"[*] Algorithm: {algo}, Work factor: {workf}")
         print(f"[*] Testing {len(word_list)} words with {NUM_THREADS} threads...")
         crack()
-
+        q = Queue()
         if result:
             t1 = time.monotonic()
             time_elapsed = t1 - t0
